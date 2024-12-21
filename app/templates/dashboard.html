@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gardening Companion{% endblock %}
+
+{% block content %}
+<section id="dashboard">
+    <h2>Your Plants</h2>
+    <div id="plant-list">
+        {% for plant in plants %}
+            <div class="plant-card">
+                <h3>{{ plant.name }}</h3>
+                <p>Watering: {{ plant.watering_schedule }}</p>
+                <p>Fertilizing: {{ plant.fertilizing_schedule }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    <button id="add-plant-btn">Add New Plant</button>
+
+    <h2>Upcoming Reminders</h2>
+    <ul id="reminder-list">
+        {% for reminder in reminders %}
+            <li>{{ reminder.task }} - {{ reminder.due }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}
