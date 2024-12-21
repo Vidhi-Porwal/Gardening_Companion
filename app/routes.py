@@ -7,7 +7,7 @@ def home():
 
 @app.route('/dashboard')
 def dashboard():
-    # Fetch plant and reminder data from the database
+    # Mock data for demonstration
     plants = [
         {"name": "Basil", "watering_schedule": "Every 3 days", "fertilizing_schedule": "Every 2 weeks"},
         {"name": "Roses", "watering_schedule": "Every 4 days", "fertilizing_schedule": "Every 3 weeks"}

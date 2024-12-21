@@ -1,29 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gardening Companion</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header>
-        <h1>Gardening Companion</h1>
-        <nav>
-            <a href="/dashboard">Dashboard</a>
-            <a href="/about">About</a>
-            <a href="/login">Login</a>
-        </nav>
-    </header>
-    <main>
-        <section>
-            <h2>Welcome to Gardening Companion</h2>
-            <p>Track your plant care schedules and get personalized tips!</p>
-            <a href="/signup" class="btn">Get Started</a>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2024 Gardening Companion</p>
-    </footer>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Home - Gardening Companion{% endblock %}
+
+{% block content %}
+<section id="home">
+    <h2>Welcome to the Gardening Companion</h2>
+    <p>Your personal assistant for managing plant care and reminders.</p>
+</section>
+{% endblock %}

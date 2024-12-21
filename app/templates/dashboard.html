@@ -8,9 +8,9 @@
     <div id="plant-list">
         {% for plant in plants %}
             <div class="plant-card">
-                <h3>{{ plant.name }}</h3>
-                <p>Watering: {{ plant.watering_schedule }}</p>
-                <p>Fertilizing: {{ plant.fertilizing_schedule }}</p>
+                <h3><i class="fa-solid fa-leaf"></i> {{ plant.name }}</h3>
+                <p><i class="fa-solid fa-droplet"></i> Watering: {{ plant.watering_schedule }}</p>
+                <p><i class="fa-solid fa-seedling"></i> Fertilizing: {{ plant.fertilizing_schedule }}</p>
             </div>
         {% endfor %}
     </div>
@@ -23,4 +23,21 @@
         {% endfor %}
     </ul>
 </section>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Add New Plant</h2>
+        <form id="add-plant-form">
+            <label for="plant-name">Plant Name:</label>
+            <input type="text" id="plant-name" name="plant-name" required>
+            <label for="watering-schedule">Watering Schedule:</label>
+            <input type="text" id="watering-schedule" name="watering-schedule" required>
+            <label for="fertilizing-schedule">Fertilizing Schedule:</label>
+            <input type="text" id="fertilizing-schedule" name="fertilizing-schedule" required>
+            <button type="submit">Add Plant</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
