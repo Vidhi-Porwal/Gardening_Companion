@@ -3,41 +3,56 @@
 {% block title %}Dashboard - Gardening Companion{% endblock %}
 
 {% block content %}
-<section id="dashboard">
-    <h2>Your Plants</h2>
-    <div id="plant-list">
+<section class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Your Plants</h2>
+        <input type="text" id="search" class="form-control w-25" placeholder="Search plants...">
+    </div>
+
+    <div class="row g-4">
         {% for plant in plants %}
-            <div class="plant-card">
-                <h3><i class="fa-solid fa-leaf"></i> {{ plant.name }}</h3>
-                <p><i class="fa-solid fa-droplet"></i> Watering: {{ plant.watering_schedule }}</p>
-                <p><i class="fa-solid fa-seedling"></i> Fertilizing: {{ plant.fertilizing_schedule }}</p>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <img src="{{ url_for('static', filename='images/default_plant.jpg') }}" class="card-img-top" alt="Plant Image">
+                <div class="card-body">
+                    <h5 class="card-title">{{ plant.name }}</h5>
+                    <p class="card-text"><i class="fa-solid fa-droplet"></i> Water: {{ plant.watering_schedule }}</p>
+                    <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilize: {{ plant.fertilizing_schedule }}</p>
+                </div>
             </div>
+        </div>
         {% endfor %}
     </div>
-    <button id="add-plant-btn">Add New Plant</button>
 
-    <h2>Upcoming Reminders</h2>
-    <ul id="reminder-list">
-        {% for reminder in reminders %}
-            <li>{{ reminder.task }} - {{ reminder.due }}</li>
-        {% endfor %}
-    </ul>
+    <button id="add-plant-btn" class="btn btn-success mt-4">Add New Plant</button>
 </section>
 
 <!-- Modal -->
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Add New Plant</h2>
-        <form id="add-plant-form">
-            <label for="plant-name">Plant Name:</label>
-            <input type="text" id="plant-name" name="plant-name" required>
-            <label for="watering-schedule">Watering Schedule:</label>
-            <input type="text" id="watering-schedule" name="watering-schedule" required>
-            <label for="fertilizing-schedule">Fertilizing Schedule:</label>
-            <input type="text" id="fertilizing-schedule" name="fertilizing-schedule" required>
-            <button type="submit">Add Plant</button>
-        </form>
+<div id="modal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Plant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-plant-form">
+                    <div class="mb-3">
+                        <label for="plant-name" class="form-label">Plant Name:</label>
+                        <input type="text" id="plant-name" name="plant-name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="watering-schedule" class="form-label">Watering Schedule:</label>
+                        <input type="text" id="watering-schedule" name="watering-schedule" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fertilizing-schedule" class="form-label">Fertilizing Schedule:</label>
+                        <input type="text" id="fertilizing-schedule" name="fertilizing-schedule" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Plant</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
