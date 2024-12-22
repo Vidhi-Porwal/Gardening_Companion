@@ -6,11 +6,16 @@
 <section class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Your Plants</h2>
-        <input type="text" id="search" class="form-control w-25" placeholder="Search plants...">
+        <div class="position-relative w-50">
+            <input type="text" id="search" class="form-control" placeholder="Search plants...">
+            <ul id="search-results" class="list-group position-absolute w-100" style="z-index: 1000; display: none;">
+                <!-- Dynamic search results will be rendered here -->
+            </ul>
+        </div>
     </div>
 
     <div class="row g-4">
-        {% for plant in plants %}
+        {% for plant in user_plants %}
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <img src="{{ url_for('static', filename='images/default_plant.jpg') }}" class="card-img-top" alt="Plant Image">
@@ -55,4 +60,55 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search');
+    const searchResults = document.getElementById('search-results');
+
+    // Search event
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim();
+
+        if (query.length > 2) {
+            fetch(`/search_plants?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+                    if (data.length > 0) {
+                        searchResults.style.display = 'block';
+                        data.forEach(plant => {
+                            const listItem = document.createElement('li');
+                            listItem.classList.add('list-group-item');
+                            listItem.textContent = plant.CommonName;
+                            listItem.addEventListener('click', () => addPlantToUser(plant));
+                            searchResults.appendChild(listItem);
+                        });
+                    } else {
+                        searchResults.innerHTML = '<li class="list-group-item">No results found</li>';
+                    }
+                });
+        } else {
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // Function to add plant to user collection
+    function addPlantToUser(plant) {
+        fetch('/add_plant_to_user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(plant)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(`${plant.CommonName} added to your plants!`);
+                location.reload();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

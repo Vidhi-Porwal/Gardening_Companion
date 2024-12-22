@@ -1,30 +1,40 @@
-from flask import render_template, session, redirect, url_for
-from app import app
-from app.auth import auth
+from flask import render_template, Blueprint
+from flask_login import login_required
 
-app.register_blueprint(auth)
+main = Blueprint('main', __name__)
 
-@app.route('/')
+@main.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/dashboard')
+@main.route('/dashboard')
+# @login_required
 def dashboard():
-    if 'user' not in session:
-        return redirect(url_for('auth.login'))  # Redirect if not logged in
+    return render_template('dashboard.html')
 
-    # Mock data for demonstration
-    plants = [
-        {"name": "Basil", "watering_schedule": "Every 3 days", "fertilizing_schedule": "Every 2 weeks"},
-        {"name": "Roses", "watering_schedule": "Every 4 days", "fertilizing_schedule": "Every 3 weeks"}
-    ]
-    reminders = [
-        {"task": "Water Basil", "due": "Tomorrow"},
-        {"task": "Fertilize Roses", "due": "In 3 days"}
-    ]
-    return render_template('dashboard.html', plants=plants, reminders=reminders)
+@main.route('/login')
+def login():
+    return render_template('login.html')
 
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    return send_from_directory(app.static_folder, filename)
+@main.route('/signup')
+def signup():
+    return render_template('signup.html')
 
+@main.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html')
+
+@main.route('/track_plants')
+@login_required
+def track_plants():
+    return render_template('track_plants.html')
+
+@main.route('/reminders')
+@login_required
+def reminders():
+    return render_template('reminders.html')
+
+@main.route('/tips_tricks')
+def tips_tricks():
+    return render_template('tips_tricks.html')

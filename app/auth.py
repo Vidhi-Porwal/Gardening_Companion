@@ -1,75 +1,69 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from werkzeug.security import check_password_hash
+from flask_login import login_user, logout_user, login_required
 import re
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from .models import User
 
 auth = Blueprint('auth', __name__)
 
-# Mock database for demonstration (Replace with actual database later)
-users = {}
+# Regular expressions for validation
+EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$'  # At least 8 characters, 1 letter, and 1 number
+PHONE_REGEX = r'^\+?[0-9]{10,15}$'  # International format or 10-15 digits
 
-# Helper function: Validate email
-def is_valid_email(email):
-    return re.match(r'^[^@]+@[^@]+\.[^@]+$', email)
+@auth.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Use .get() to avoid KeyError
+        identifier = request.form.get('identifier')  # username or phone
+        password = request.form.get('password')
 
-# Helper function: Validate password
-def is_valid_password(password):
-    return len(password) >= 8 and re.search(r'\d', password) and re.search(r'[A-Za-z]', password)
+        if not identifier or not password:
+            flash('Please provide both identifier and password.', 'danger')
+            return redirect(url_for('auth.login'))
 
-# Signup Route
+        # Proceed with login logic
+        user = User.get_user_by_username_or_phone(identifier)  # Update this logic as per your app
+        if user and check_password_hash(User.password_hash, password):
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid credentials, please try again.', 'danger')
+            return redirect(url_for('auth.login'))
+    return render_template('login.html')
+
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         full_name = request.form['full_name']
         username = request.form['username']
-        password = request.form['password']
         email = request.form['email']
-        mobile_no = request.form['mobile_no']
+        password = request.form['password']
+        phone_no = request.form['phone_no']
 
-        # Validate inputs
-        if not full_name or not username or not password or not email or not mobile_no:
-            flash('All fields are required!', 'danger')
-        elif username in users:
-            flash('Username already exists!', 'danger')
-        elif mobile_no in [user['mobile_no'] for user in users.values()]:
-            flash('Mobile number already registered!', 'danger')
-        elif not is_valid_email(email):
-            flash('Invalid email format!', 'danger')
-        elif not is_valid_password(password):
-            flash('Password must be at least 8 characters long, include letters and numbers!', 'danger')
+        # Regex validation
+        if not re.match(EMAIL_REGEX, email):
+            flash('Invalid email format. Please enter a valid email address.')
+        elif not re.match(PASSWORD_REGEX, password):
+            flash('Password must be at least 8 characters long and contain at least one letter and one number.')
+        elif not re.match(PHONE_REGEX, phone_no):
+            flash('Invalid phone number. It must be 10-15 digits and can include a leading "+" for international numbers.')
+        elif User.get_user_by_email(email):
+            flash('Email is already registered.')
         else:
-            # Save user
-            users[username] = {
-                'full_name': full_name,
-                'password': password,
-                'email': email,
-                'mobile_no': mobile_no
-            }
-            flash('Signup successful! Please login.', 'success')
+            # For now, store passwords in plain text; replace with hashed passwords in production
+            User.create_user(full_name, username, email, password, phone_no)
+            flash('Account created successfully! Please log in.')
             return redirect(url_for('auth.login'))
-
     return render_template('signup.html')
 
-# Login Route
-@auth.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        identifier = request.form['identifier']
-        password = request.form['password']
-
-        # Check user by username or mobile number
-        user = next((user for user in users.values() if (user['mobile_no'] == identifier or user == identifier)), None)
-
-        if not user or user['password'] != password:
-            flash('Invalid credentials!', 'danger')
-        else:
-            session['user'] = user
-            flash(f'Welcome back, {user["full_name"]}!', 'success')
-            return redirect(url_for('dashboard'))
-
-    return render_template('login.html')
-
-# Logout Route
 @auth.route('/logout')
+@login_required
 def logout():
-    session.pop('user', None)
-    flash('You have been logged out!', 'success')
+    logout_user()
     return redirect(url_for('auth.login'))
+
+@auth.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
