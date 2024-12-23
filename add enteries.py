@@ -12,7 +12,7 @@ connection = pymysql.connect(
 cursor = connection.cursor()
 
 # Read the Excel file
-file_path = "/home/vidhi/Downloads/edible_plants1.xlsx"
+file_path = "/home/vidhi/Downloads/final.xlsx"
 data = pd.read_excel(file_path)
 
 # Rename columns to match the database schema

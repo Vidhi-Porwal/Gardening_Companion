@@ -16,3 +16,4 @@ def dashboard():
     return render_template('dashboard.html', user_plants=user_plants)
 
 # Add your search and add-plant-to-user routes here as well.
+    
