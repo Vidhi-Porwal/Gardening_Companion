@@ -1,11 +1,10 @@
-### models.py ###
 from flask_login import UserMixin
 from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 import pymysql
 
 class User(UserMixin):
-    def __init__(self, id, full_name, username, email, password_hash, phone_no, status):
+    def __init__(self, id, full_name, username, email, password_hash, phone_no, status, **kwargs):
         self.id = id
         self.full_name = full_name
         self.username = username
@@ -19,7 +18,7 @@ class User(UserMixin):
         connection = current_app.config['DB_CONNECTION']()
         try:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+                cursor.execute("SELECT id, full_name, username, email, password_hash, phone_no, status FROM users WHERE id = %s", (user_id,))
                 result = cursor.fetchone()
                 if result:
                     return User(**result)
@@ -32,7 +31,7 @@ class User(UserMixin):
         connection = current_app.config['DB_CONNECTION']()
         try:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+                cursor.execute("SELECT id, full_name, username, email, password_hash, phone_no, status FROM users WHERE email = %s", (email,))
                 result = cursor.fetchone()
                 if result:
                     return User(**result)
@@ -64,7 +63,7 @@ class User(UserMixin):
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT * FROM users WHERE username = %s OR phone_no = %s
+                    SELECT id, full_name, username, email, password_hash, phone_no, status FROM users WHERE username = %s OR phone_no = %s
                     """,
                     (identifier, identifier)
                 )
