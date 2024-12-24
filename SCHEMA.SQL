@@ -25,3 +25,14 @@ CREATE TABLE IF NOT EXISTS PlantInfo (
     SaplingDescription TEXT,
     PlantDescription TEXT
 );
+
+CREATE TABLE UserPlant (
+    user_id INT,
+    plant_id INT,
+    quantity INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, plant_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (plant_id) REFERENCES PlantInfo(ID) ON DELETE CASCADE
+);
+

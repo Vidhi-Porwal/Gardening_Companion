@@ -1,13 +1,12 @@
+### init.py ###
 from flask import Flask
 from flask_login import LoginManager
 import pymysql
 import os
-from app.dashboard import dashboard
+from .dashboard import dashboard_bp
 
 # Initialize extensions
 login_manager = LoginManager()
-
-# Set the login view for login-required routes
 login_manager.login_view = "auth.login"
 
 @login_manager.user_loader
@@ -40,15 +39,13 @@ def create_app():
     # Initialize extensions
     login_manager.init_app(app)
 
+    # Register blueprints
     from .routes import main
     app.register_blueprint(main)
 
-    from .dashboard import dahboard
-    app.register_blueprint(dashboard)
-
-
-    # Register blueprints
     from .auth import auth
     app.register_blueprint(auth, url_prefix='/auth')
+
+    app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
 
     return app
