@@ -20,16 +20,17 @@
             <div class="card shadow-sm">
                 <img src="{{ url_for('static', filename='images/default_plant.jpg') }}" class="card-img-top" alt="Plant Image">
                 <div class="card-body">
-                    <h5 class="card-title">{{ plant.name }}</h5>
+                    <h5 class="card-title">{{ plant.CommonName }}</h5>
                     <p class="card-text"><i class="fa-solid fa-droplet"></i> Water: {{ plant.watering_schedule }}</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilize: {{ plant.fertilizing_schedule }}</p>
+                    <button class="btn btn-danger" onclick="removePlant({{ plant.plant_id }})">Remove</button>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <button id="add-plant-btn" class="btn btn-success mt-4">Add New Plant</button>
+    <button id="add-plant-btn" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#modal">Add New Plant</button>
 </section>
 
 <!-- Modal -->
@@ -41,18 +42,16 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="add-plant-form">
+                <form id="add-plant-form" action="{{ url_for('dashboard.add_plant_to_user', plant_id=plant.ID) }}">
                     <div class="mb-3">
-                        <label for="plant-name" class="form-label">Plant Name:</label>
-                        <input type="text" id="plant-name" name="plant-name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="watering-schedule" class="form-label">Watering Schedule:</label>
-                        <input type="text" id="watering-schedule" name="watering-schedule" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="fertilizing-schedule" class="form-label">Fertilizing Schedule:</label>
-                        <input type="text" id="fertilizing-schedule" name="fertilizing-schedule" class="form-control" required>
+                        <label for="plant-dropdown" class="form-label">Select Plant:</label>
+                        <select id="plant-dropdown" class="form-control" required>
+                            <option value="" disabled selected>Select a plant</option>
+                            <!-- Dynamic plant options will be rendered here -->
+                            {% for plant in plants %}
+                                <option value="{{ plant.ID }}">{{ plant.CommonName }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Add Plant</button>
                 </form>
@@ -65,46 +64,55 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('search');
-    const searchResults = document.getElementById('search-results');
+    const addPlantBtn = document.getElementById('add-plant-btn');
+    const plantDropdown = document.getElementById('plant-dropdown');
 
-    // Search event
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.trim();
+    // Fetch plant names when the "Add New Plant" button is clicked
+    addPlantBtn.addEventListener('click', () => {
+        fetch('/dashboard/get_plants')
+            .then(response => response.json())
+            .then(data => {
+                // Clear current options and add a placeholder
+                plantDropdown.innerHTML = '<option value="" disabled selected>Select a plant</option>';
 
-        if (query.length > 2) {
-            fetch(`/search_plants?q=${query}`)
-                .then(response => response.json())
-                .then(data => {
-                    searchResults.innerHTML = '';
-                    if (data.length > 0) {
-                        searchResults.style.display = 'block';
-                        data.forEach(plant => {
-                            const listItem = document.createElement('li');
-                            listItem.classList.add('list-group-item');
-                            listItem.textContent = plant.CommonName;
-                            listItem.addEventListener('click', () => addPlantToUser(plant));
-                            searchResults.appendChild(listItem);
-                        });
-                    } else {
-                        searchResults.innerHTML = '<li class="list-group-item">No results found</li>';
-                    }
+                // Dynamically add plant options from the fetched data
+                data.forEach(plant => {
+                    const option = document.createElement('option');
+                    option.value = plant.ID;
+                    option.textContent = plant.CommonName;
+                    plantDropdown.appendChild(option);
                 });
-        } else {
-            searchResults.style.display = 'none';
-        }
+            })
+            .catch(error => {
+                console.error('Error fetching plant data:', error);
+            });
     });
 
-    // Function to add plant to user collection
-    function addPlantToUser(plant) {
-        fetch('/add_plant_to_user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(plant)
+    // Add the selected plant to the user's collection
+    document.getElementById('add-plant-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const plantId = plantDropdown.value;
+
+        fetch(`/add_plant_to_user/${plantId}`, {
+            method: 'POST'
         })
         .then(response => {
             if (response.ok) {
-                alert(`${plant.CommonName} added to your plants!`);
+                alert('Plant added to your collection!');
+                location.reload();
+            }
+        });
+    });
+
+    // Function to remove plant from user collection
+    function removePlant(plantId) {
+        fetch(`/remove_plant_from_user/${plantId}`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Plant removed!');
                 location.reload();
             }
         });

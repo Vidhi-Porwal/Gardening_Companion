@@ -9,7 +9,7 @@ auth = Blueprint('auth', __name__)
 
 # Regular expressions for validation
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$'  # At least 8 characters, 1 letter, and 1 number
+PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#_]{8,}$'  # At least 8 characters, 1 letter, and 1 number
 PHONE_REGEX = r'^\+?[0-9]{10,15}$'  # International format or 10-15 digits
 
 @auth.route('/login', methods=['GET', 'POST'])
