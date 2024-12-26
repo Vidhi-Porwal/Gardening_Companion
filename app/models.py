@@ -103,7 +103,9 @@ class UserPlant:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT p.CommonName, p.ScientificName, p.ImageURL ,up.quantity
+                    SELECT up.plant_id, p.CommonName, p.ScientificName, p.ImageURL,
+                           up.quantity, p.FamilyCommonName, p.Genus, p.Edible, 
+                           p.SaplingDescription, p.PlantDescription, p.Status, p.Rank
                     FROM UserPlant up
                     JOIN PlantInfo p ON up.plant_id = p.ID
                     WHERE up.user_id = %s
@@ -111,6 +113,7 @@ class UserPlant:
                     (user_id,)
                 )
                 return cursor.fetchall()
+
 
     @staticmethod
     def add_plant_to_user(user_id, plant_id, quantity):
@@ -135,14 +138,28 @@ class UserPlant:
         with get_db_connection() as connection:
             try:
                 with connection.cursor() as cursor:
+                    # Check if the plant exists
+                    cursor.execute(
+                        "SELECT 1 FROM UserPlant WHERE user_id = %s AND plant_id = %s",
+                        (user_id, plant_id)
+                    )
+                    if not cursor.fetchone():
+                        logging.warning(f"Plant not found for removal (user_id={user_id}, plant_id={plant_id})")
+                        return False  # No record found
+                    
+                    # Perform deletion
                     cursor.execute(
                         "DELETE FROM UserPlant WHERE user_id = %s AND plant_id = %s",
                         (user_id, plant_id)
                     )
                     connection.commit()
+                    return True
             except Exception as e:
                 logging.error(f"Error removing plant from user: {e}")
                 connection.rollback()
+                return False
+
+
 
 # PlantInfo model
 class PlantInfo:

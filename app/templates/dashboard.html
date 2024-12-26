@@ -13,18 +13,18 @@
     <div class="row g-4">
         {% for plant in user_plants %}
         <div class="col-md-4">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm plant-card">
                 <img src="{{ plant.ImageURL if plant.ImageURL else url_for('static', filename='images/default_plant.jpg') }}" 
-                 class="card-img-top" 
-                 alt="Plant Image">
+                     class="card-img-top" 
+                     alt="Plant Image">
                 <div class="card-body">
                     <h5 class="card-title">{{ plant.CommonName }}</h5>
-                    <p class="card-text"><i class="fa-solid fa-droplet"></i> Scientific Name: {{ plant.ScientificName }}</p>
-                    <p class="card-text"><i class="fa-solid fa-droplet"></i> Quantity: {{ plant.quantity }}</p>
-                    <!-- <p class="card-text"><i class="fa-solid fa-droplet"></i> Water: {{ plant.watering_schedule }}</p>
-                    <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilize: {{ plant.fertilizing_schedule }}</p> -->
+                    <p class="card-text"><i class="fa-solid fa-box"></i> Quantity: {{ plant.quantity }}</p>
+                    <!-- Watering and Fertilizing Schedule -->
+                    <p class="card-text"><i class="fa-solid fa-water"></i> Watering Schedule: {{ plant.watering_schedule if plant.watering_schedule else 'N/A' }}</p>
+                    <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing Schedule: {{ plant.fertilizing_schedule if plant.fertilizing_schedule else 'N/A' }}</p>
                     
-                    <!-- Remove Plant Form -->
+                    <!-- Remove Plant Button -->
                     <form method="POST" action="{{ url_for('dashboard.dashboard') }}">
                         <input type="hidden" name="plant_id" value="{{ plant.plant_id }}">
                         <button type="submit" name="remove_plant" class="btn btn-danger">Remove</button>

@@ -24,15 +24,23 @@ def dashboard():
             # Handle removing a plant
             if 'remove_plant' in request.form:
                 plant_id = request.form.get('plant_id')
+                print(f"Removing plant with ID: {plant_id}")  # Debug log
                 if plant_id:
-                    UserPlant.remove_plant_from_user(current_user.id, plant_id)
+                    success = UserPlant.remove_plant_from_user(current_user.id, plant_id)
+                    if not success:
+                        print("plant not removed")
+                        # flash("Failed to remove the plant. Please try again.", "danger")
+                    else:
+                        print("plant removed successfully")
+                        # flash("Plant removed successfully.", "success")
                 return redirect(url_for('dashboard.dashboard'))
+
 
         return render_template('dashboard.html', user_plants=user_plants, plants=plants)
     except Exception as e:
         print(f"Error in dashboard: {e}")
-        return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
-
+        # return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
+        return render_template('login.html')
 
 
 

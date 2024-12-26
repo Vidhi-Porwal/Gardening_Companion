@@ -25,7 +25,7 @@ def login():
         user = User.get_user_by_username_or_phone(identifier)
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            flash('Login successful!', 'success')
+            # flash('Login successful!', 'success')
             return redirect(url_for('dashboard.dashboard'))
         else:
             flash('Invalid credentials, please try again.', 'danger')
@@ -59,4 +59,5 @@ def signup():
 @login_required
 def logout():
     logout_user()
+    flash('Logout successful!', 'success')
     return redirect(url_for('auth.login'))

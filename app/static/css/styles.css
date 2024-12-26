@@ -4174,7 +4174,30 @@ textarea.form-control-lg {
 }
 
 .card-img,
-.card-img-top,
+.card-img-top{
+    height: 200px; /* Set the desired height */
+    object-fit: cover; /* Ensures the image fills the height while keeping proportions */
+    width: 100%; /* Ensures the image stretches to the card's width */
+    border-radius: 5px; /* Optional: Adds rounded corners */
+}
+
+.watered {
+    border: 2px solid green;
+}
+
+.not-watered {
+    border: 2px solid red;
+}
+
+.fertilized {
+    border: 2px solid yellow;
+}
+
+.not-fertilized {
+    border: 2px solid gray;
+}
+
+
 .card-img-bottom {
   width: 100%;
 }
@@ -4194,6 +4217,10 @@ textarea.form-control-lg {
   .card-group > .card + .card {
     margin-left: 0;
     border-left: 0;
+  }
+
+  .card-img-top {
+    height: 200px; /* Increase height for larger screens */
   }
 }
 
