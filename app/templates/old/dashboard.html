@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gardening Companion{% endblock %}
+
+{% block content %}
+<section class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Your Plants</h2>
+        <div class="position-relative w-50">
+            <input type="text" id="search" class="form-control" placeholder="Search plants...">
+            <ul id="search-results" class="list-group position-absolute w-100" style="z-index: 1000; display: none;">
+                <!-- Dynamic search results will be rendered here -->
+            </ul>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for plant in user_plants %}
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <img src="{{ url_for('static', filename='images/default_plant.jpg') }}" class="card-img-top" alt="Plant Image">
+                <div class="card-body">
+                    <h5 class="card-title">{{ plant.CommonName }}</h5>
+                    <p class="card-text"><i class="fa-solid fa-droplet"></i> Water: {{ plant.watering_schedule }}</p>
+                    <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilize: {{ plant.fertilizing_schedule }}</p>
+                    <button class="btn btn-danger" onclick="removePlant({{ plant.plant_id }})">Remove</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button id="add-plant-btn" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#modal">Add New Plant</button>
+</section>
+
+<!-- Modal -->
+<div id="modal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Plant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-plant-form" action="{{ url_for('dashboard.dashboard') }}">
+                    <div class="mb-3">
+                        <label for="plant-dropdown" class="form-label">Select Plant:</label>
+                        <select id="plant_id" class="form-control" name="plant_id"required>
+                            <option value="" disabled selected>Select a plant</option>
+                            <!-- Dynamic plant options will be rendered here -->
+                            {% for plant in plants %}
+                                <option value="{{ plant.ID }}">{{ plant.CommonName }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Plant</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const addPlantBtn = document.getElementById('add-plant-btn');
+    const plantDropdown = document.getElementById('plant-dropdown');
+
+    // Fetch plant names when the "Add New Plant" button is clicked
+    addPlantBtn.addEventListener('click', () => {
+        fetch('/dashboard/get_plants')
+            .then(response => response.json())
+            .then(data => {
+                // Clear current options and add a placeholder
+                plantDropdown.innerHTML = '<option value="" disabled selected>Select a plant</option>';
+
+                // Dynamically add plant options from the fetched data
+                data.forEach(plant => {
+                    const option = document.createElement('option');
+                    option.value = plant.ID;
+                    option.textContent = plant.CommonName;
+                    plantDropdown.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching plant data:', error);
+            });
+    });
+
+    // Add the selected plant to the user's collection
+    document.getElementById('add-plant-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const plantId = plantDropdown.value;
+
+        fetch(`/add_plant_to_user/${plantId}`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Plant added to your collection!');
+                location.reload();
+            }
+        });
+    });
+
+    // Function to remove plant from user collection
+    function removePlant(plantId) {
+        fetch(`/remove_plant_from_user/${plantId}`, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Plant removed!');
+                location.reload();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

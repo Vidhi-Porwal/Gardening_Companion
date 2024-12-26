@@ -103,7 +103,7 @@ class UserPlant:
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT p.CommonName, p.ScientificName, up.quantity
+                    SELECT p.CommonName, p.ScientificName, p.ImageURL ,up.quantity
                     FROM UserPlant up
                     JOIN PlantInfo p ON up.plant_id = p.ID
                     WHERE up.user_id = %s
