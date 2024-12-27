@@ -45,8 +45,8 @@
     <button id="add-plant-btn" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addPlantModal">Add New Plant</button>
 </section>
 
-<h2>Generated Garden Plant List</h2>
-<p>{{ gemini_response }}</p>
+    <h2>Generated Garden Plant List</h2>
+    <p>{{ gemini_response }}</p>
 
 <!-- Plant Details Modal -->
 <div id="plantDetailsModal" class="modal fade" tabindex="-1">
@@ -75,6 +75,13 @@
                     <input type="hidden" id="modalPlantId" name="plant_id" value="">
                     <button type="submit" name="remove_plant" class="btn btn-danger">Remove</button>
                 </form>
+
+
+                <!-- Remove Plant Button inside Modal -->
+                <!-- <form method="POST" action="{{ url_for('dashboard.dashboard') }}">
+                    <input type="hidden" name="plant_id" value="{{ plant.plant_id }}">
+                    <button type="submit" name="remove_plant" class="btn btn-danger">Remove</button>
+                </form> -->
             </div>
         </div>
     </div>
@@ -106,5 +113,59 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const plantCards = document.querySelectorAll('.plant-card');
+        const modal = document.getElementById('plantDetailsModal');
+        
+        const plantImage = modal.querySelector('#plantImage');
+        const plantName = modal.querySelector('#plantName');
+        const plantScientificName = modal.querySelector('#plantScientificName');
+        const plantYear = modal.querySelector('#plantYear');
+        const plantAuthor = modal.querySelector('#plantAuthor');
+        const plantStatus = modal.querySelector('#plantStatus');
+        const plantRank = modal.querySelector('#plantRank');
+        const plantFamily = modal.querySelector('#plantFamily');
+        const plantGenus = modal.querySelector('#plantGenus');
+        const plantEdible = modal.querySelector('#plantEdible');
+        const plantSaplingDescription = modal.querySelector('#plantSaplingDescription');
+        const plantPlantDescription = modal.querySelector('#plantPlantDescription');
+        const modalPlantId = modal.querySelector('#modalPlantId');
+        
+        plantCards.forEach(card => {
+            card.addEventListener('click', function () {
+                plantImage.src = this.getAttribute('data-image-url');
+                plantName.textContent = this.getAttribute('data-name');
+                plantScientificName.textContent = this.getAttribute('data-scientific-name');
+                plantYear.textContent = this.getAttribute('data-year') || 'Unknown';
+                plantAuthor.textContent = this.getAttribute('data-author') || 'Unknown';
+                plantStatus.textContent = this.getAttribute('data-status') || 'Unknown';
+                plantRank.textContent = this.getAttribute('data-rank') || 'Unknown';
+                plantFamily.textContent = this.getAttribute('data-family') || 'Unknown';
+                plantGenus.textContent = this.getAttribute('data-genus') || 'Unknown';
+                plantEdible.textContent = this.getAttribute('data-edible');
+                plantSaplingDescription.textContent = this.getAttribute('data-sapling-description') || 'Not available';
+                plantPlantDescription.textContent = this.getAttribute('data-plant-description') || 'Not available';
+                
+                // Set the hidden input with the plant ID for removal
+                modalPlantId.value = this.getAttribute('data-id');
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const plantCards = document.querySelectorAll('.plant-card');
+        const modal = document.getElementById('plantDetailsModal');
+        const modalPlantId = modal.querySelector('#modalPlantId'); // Hidden input field for plant ID
+
+        plantCards.forEach(card => {
+            card.addEventListener('click', function () {
+                // Set the hidden input with the plant ID for removal
+                modalPlantId.value = this.getAttribute('data-id');
+            });
+        });
+    });
+
+</script>
