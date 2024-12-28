@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from .models import UserPlant, PlantInfo
-
+import google.generativeai as genai
 dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/', methods=['GET', 'POST'])
@@ -36,12 +36,56 @@ def dashboard():
                 return redirect(url_for('dashboard.dashboard'))
 
 
-        return render_template('dashboard.html', user_plants=user_plants, plants=plants)
+        return render_template('dashboard.html', user_plants=user_plants, plants=plants, chatbot_open=chatbot_open,
+            chat_history=chat_history)
     except Exception as e:
         print(f"Error in dashboard: {e}")
         # return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
         return render_template('login.html')
+genai.configure(api_key="AIzaSyCF9pTtirypeeHUMTohJiepKntkuuP07hI")
+model = genai.GenerativeModel("gemini-1.5-flash")
+chatbot_open = False  # Global variable to track chatbot visibility
+chat_history = []  # Global variable to store chat history
+def chatbot_response(prompt, chat_history=[]):
+    if chat_history:
+        prompt = "\n".join(chat_history) + "\n" + prompt
 
+    concise_prompt = f"Please answer briefly: {prompt}"
+    try:
+        response = model.generate_content(concise_prompt)
+        if response and hasattr(response, "text") and response.text:
+            return response.text
+        return "Sorry, I couldn't generate a response. Try again!"
+    except Exception as e:
+        return "Error occurred while processing your request. Please try again!"
+
+# Route to toggle the chatbot visibility
+@dashboard_bp.route('/chatbot_toggle', methods=['POST'])
+@login_required
+def chatbot_toggle():
+    global chatbot_open
+    chatbot_open = not chatbot_open
+    return redirect(url_for('dashboard.dashboard'))
+
+# Route to handle chatbot interactions
+@dashboard_bp.route('/chatbot', methods=['POST'])
+@login_required
+def chatbot():
+    global chat_history
+
+    # Get user input from form
+    user_message = request.form.get("message")
+    if not user_message:
+        return redirect(url_for('dashboard.dashboard'))
+
+    # Add user message to chat history
+    chat_history.append(f"You: {user_message}")
+
+    # Generate chatbot response
+    chatbot_reply = chatbot_response(user_message, chat_history)
+    chat_history.append(f"Plantie 🌼: {chatbot_reply}")
+
+    return redirect(url_for('dashboard.dashboard'))
 
 
 
