@@ -107,4 +107,45 @@
     </div>
 </div>
 
+<!-- Chatbot Icon and Chatbox -->
+<div id="chatbot-container" style="position: fixed; bottom: 20px; right: 20px;">
+    <!-- Chatbot Toggle Button -->
+    <form method="POST" action="{{ url_for('dashboard.chatbot_toggle') }}">
+        <button class="btn btn-primary rounded-circle" 
+                style="width: 60px; height: 60px; display: flex; justify-content: center; align-items: center;">
+            <i class="fa-solid fa-comments"></i>
+        </button>
+    </form>
+    
+    <!-- Chatbox -->
+    {% if chatbot_open %}
+    <div class="card shadow" style="position: absolute; bottom: 70px; right: 0; width: 300px;">
+        <div class="card-header bg-primary text-white">
+            <h6>Plantie 🌻</h6>
+        </div>
+        <div class="card-body" style="height: 300px; overflow-y: auto;">
+            {% if chat_history %}
+                {% for message in chat_history %}
+                    {% if loop.index0 is divisibleby 2 %}
+                        <p class="text-end text-primary">{{ message }}</p>
+                    {% else %}
+                        <p class="text-start">{{ message }}</p>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Hi! I am Plantie 🌻. Ask me anything about plants! 😊</p>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <form method="POST" action="{{ url_for('dashboard.chatbot') }}">
+                <div class="input-group">
+                    <input type="text" name="message" class="form-control" placeholder="Type your message..." required>
+                    <button class="btn btn-success" type="submit">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
 {% endblock %}
