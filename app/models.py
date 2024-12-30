@@ -175,3 +175,15 @@ class PlantInfo:
             except Exception as e:
                 logging.error(f"Error fetching plants: {e}")
                 return []
+
+    @staticmethod
+    def get_plant_by_id():
+        with get_db_connection() as connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT * FROM PlantInfo WHERE ID = %s")
+                    result = cursor.fetchone()
+                    return result
+            except Exception as e:
+                logging.error(f"Error fetching plants: {e}")
+                return []

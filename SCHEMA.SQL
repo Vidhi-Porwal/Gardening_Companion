@@ -31,6 +31,11 @@ CREATE TABLE UserPlant (
     plant_id INT,
     quantity INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    watering INT,
+    fertilizing INT,
+    sunlight INT,
+    fertilizer_type varchar(255)
+
     PRIMARY KEY (user_id, plant_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (plant_id) REFERENCES PlantInfo(ID) ON DELETE CASCADE

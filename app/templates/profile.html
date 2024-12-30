@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="profile-container">
+    <h1>User Profile</h1>
+    <div class="profile-field">
+        <label>Full Name:</label>
+        <span id="full-name">John Doe</span>
+    </div>
+    <div class="profile-field">
+        <label>Username:</label>
+        <span id="username">johndoe123</span>
+    </div>
+    <div class="profile-field">
+        <label>Email:</label>
+        <span id="email">johndoe@example.com</span>
+    </div>
+    <div class="profile-field">
+        <label>Phone Number:</label>
+        <span id="phone">+1234567890</span>
+    </div>
+    <div class="profile-field">
+        <label>Status:</label>
+        <span id="status">Active</span>
+    </div>
+    <div class="actions">
+        <button>Edit Profile</button>
+    </div>
+</div>
+
+{% endblock %}

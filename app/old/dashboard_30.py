@@ -4,6 +4,15 @@ from flask_login import login_required, current_user
 from .models import User, UserPlant, PlantInfo
 import google.generativeai as genai
 import os
+# from twilio.twiml.messaging_response import MessagingResponse
+# from twilio.rest import Client
+
+
+#twilio account setup
+# TWILIO_ACCOUNT_SID = "AC54864ecd02d827663926bf6d9a87fdc1"
+# TWILIO_AUTH_TOKEN = "61ddaf7c8d54d9858db72bb7f024884b"
+# TWILIO_WHATSAPP_NUMBER = "whatsapp:+12185035494"
+
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -39,6 +48,25 @@ def dashboard():
                     UserPlant.add_plant_to_user(current_user.id, plant_id, quantity=1)
 
 
+                    # Fetch user details and send a message
+                    # user_details = User.get_user_by_id(current_user.id)
+                    # print("1111111111111111")
+                    # if user_details and user_details.phone_no:
+                    #     # print("2222222222222222222")
+                    #     numbers = [user_details.phone_no]
+                    #     message_body = request.form.get('message', 'CONGRATS! NEW PLANT ADDED TO YOUR GARDEN')
+
+                    #     # Add country code "+91" if missing
+                    #     numbers = [f'+91{num}' if not num.startswith("+91") else num for num in numbers]
+                    #     print (numbers)
+
+                    #     responses = []
+                    #     for number in numbers:
+                    #         response = send_whatsapp_message(number, message_body)
+                    #         responses.append({'number': number, 'response': response})
+
+                    #     return jsonify(responses)  # Respond with WhatsApp message status
+
             # Handle removing a plant
             if 'remove_plant' in request.form:
                 plant_id = request.form.get('plant_id')
@@ -66,6 +94,23 @@ def dashboard():
     except Exception as e:
         print(f"Error in dashboard: {e}")
         return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
+
+# Function to send a WhatsApp message
+def send_whatsapp_message(to_number, message_body):
+    try:
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        message = client.messages.create(
+            # body=message_body,
+            # from_=f"whatsapp:{TWILIO_WHATSAPP_NUMBER}",
+            # to=f"whatsapp:{to_number}"
+            from_='whatsapp:+12185035494',  # Your Twilio WhatsApp number
+            body='Hello from Twilio WhatsApp!',
+            to='whatsapp:+919425011053'
+
+        )
+        return f"Message sent: SID {message.sid}"
+    except Exception as e:
+        return f"Failed to send message: {e}"
 
 
 # genai.configure(api_key="AIzaSyCF9pTtirypeeHUMTohJiepKntkuuP07hI")
