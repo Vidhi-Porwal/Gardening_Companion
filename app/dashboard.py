@@ -19,24 +19,76 @@ def dashboard():
         # Fetch user plants and all plants
         user_plants = UserPlant.get_user_plants(current_user.id)
         plants = PlantInfo.get_all_plants()
-
+        print(user_plants)
         # Generate content using Gemini API
         gemini_response = None
-        try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content("give me watering and fertiliziling schedule for curry leave plant, i just want number like in how many days return only a number, also give me amount of sunlight it need , give me answer in no. 1 if full sunlight , 2 if partial sunlight 3 if no sunlight, also give me type of fertilizer recomended for this plant ")
-            gemini_response = response.text
-        except Exception as e:
-            print(f"Error generating content: {e}")
-            gemini_response = "Error generating garden plant list."
+        
+
 
         if request.method == 'POST':
             # Handle adding a plant
             if 'add_plant' in request.form:
                 plant_id = request.form.get('plant_id')
                 if plant_id:
-                    # Add the plant to the user's garden
-                    UserPlant.add_plant_to_user(current_user.id, plant_id, quantity=1)
+                    try:
+                        plant_common_name = UserPlant.get_common_name(plant_id)
+                        # with get_db_connection() as connection:
+                        #     with connection.cursor() as cursor:
+                        #         cursor.execute("SELECT common_name FROM PlantInfo WHERE id = %s", (plant_id,))
+                        #         result = cursor.fetchone()
+                        #         if result:
+                        #             plant_common_name = result[0]
+                        #         else:
+                        #             print(f"No plant found with ID {plant_id}")
+                        #             return "Plant not found", 404
+
+                    # Generate the prompt dynamically
+                        
+                        # updated 
+                    
+                        
+                        
+                        
+                        model = genai.GenerativeModel("gemini-1.5-flash")
+
+                        response = model.generate_content( f"give me watering and fertilizing schedule for {plant_common_name}, "
+                            "i just want number like in how many days return only a number, also give me amount of sunlight it need, "
+                            "give me answer in no. 1 if full sunlight, 2 if partial sunlight, 3 if no sunlight, "
+                            "also give me type of fertilizer recommended for this plant. "
+                            "In watering and fertilizing give only a number, not like 2-3, give only 2 or only 3.")
+                        gemini_response = response.text
+                        print(gemini_response)
+                    except Exception as e:
+                        print(f"Error generating content: {e}")
+                        gemini_response = "Error generating garden plant list."
+                        # Add the plant to the user's garden
+                    data = {}
+                    for line in gemini_response.split("\n"):
+                        if "Watering:" in line:
+                            value = line.split(":")[1].strip()
+                            data['watering'] = int(value) if value.isdigit() else None
+                            
+                        elif "Fertilizing:" in line:
+                            value = line.split(":")[1].strip()
+                            data['fertilizing'] = int(value) if value.isdigit() else None
+                        elif "Sunlight:" in line:
+                            value = line.split(":")[1].strip()
+                            data['sunlight'] = int(value) if value.isdigit() else None
+                        elif "Fertilizer type:" in line:
+                            data['fertilizer_type'] = line.split(":")[1].strip() or "Unknown"
+
+                    # Debugging the parsed data
+                    print("Parsed Data:", data)
+                
+                    UserPlant.add_plant_to_user(current_user.id, plant_id,data['watering'],data['fertilizing'],
+                            data['sunlight'],
+                            data['fertilizer_type'],quantity=1)
+                    print("user plant added")
+                
+
+                # Insert into database
+                
+                return redirect(url_for('dashboard.dashboard'))
 
 
             # Handle removing a plant

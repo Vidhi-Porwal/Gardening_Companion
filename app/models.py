@@ -105,7 +105,8 @@ class UserPlant:
                     """
                     SELECT up.plant_id, p.CommonName, p.ScientificName, p.ImageURL,
                            up.quantity, p.FamilyCommonName, p.Genus, p.Edible, 
-                           p.SaplingDescription, p.PlantDescription, p.Status, p.Rank
+                           p.SaplingDescription, p.PlantDescription, p.Status, p.Rank,
+                           up.watering,up.fertilizing,up.fertilizer_type,up.sunlight
                     FROM UserPlant up
                     JOIN PlantInfo p ON up.plant_id = p.ID
                     WHERE up.user_id = %s
@@ -115,24 +116,34 @@ class UserPlant:
                 return cursor.fetchall()
 
 
+   
     @staticmethod
-    def add_plant_to_user(user_id, plant_id, quantity):
+    def add_plant_to_user(user_id, plant_id, watering, fertilizing, sunlight, fertilizer_type, quantity):
         with get_db_connection() as connection:
             try:
                 with connection.cursor() as cursor:
                     cursor.execute(
                         """
-                        INSERT INTO UserPlant (user_id, plant_id, quantity)
-                        VALUES (%s, %s, %s)
+                        INSERT INTO UserPlant(user_id, plant_id, quantity, watering, fertilizing, sunlight, fertilizer_type)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
                         ON DUPLICATE KEY UPDATE quantity = quantity + %s
                         """,
-                        (user_id, plant_id, quantity, quantity)
+                        (user_id, plant_id, quantity, watering, fertilizing, sunlight, fertilizer_type, quantity)
                     )
                     connection.commit()
             except Exception as e:
                 logging.error(f"Error adding plant to user: {e}")
                 connection.rollback()
-
+    def get_common_name(plant_id):
+        with get_db_connection() as connection:
+                                with connection.cursor() as cursor:
+                                    cursor.execute("SELECT CommonName FROM PlantInfo WHERE id = %s", (plant_id,))
+                                    result = cursor.fetchone()
+                                    if result:
+                                        return result
+                                    else:
+                                        print(f"No plant found with ID {plant_id}")
+                                        return "Plant not found", 404
     @staticmethod
     def remove_plant_from_user(user_id, plant_id):
         with get_db_connection() as connection:

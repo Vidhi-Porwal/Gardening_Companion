@@ -4,15 +4,15 @@ import pymysql
 # Connect to the database
 connection = pymysql.connect(
     host="localhost",
-    user="root",
-    password="Vidhi@3112",
+    user="admin",
+    password="Gurpreet@2309",
     database="gardening_companion"
 )
 
 cursor = connection.cursor()
 
 # Read the Excel file
-file_path = "/home/vidhi/Downloads/final.xlsx"
+file_path = "/home/gurpreet/Downloads/final.xlsx"
 data = pd.read_excel(file_path)
 
 # Rename columns to match the database schema
