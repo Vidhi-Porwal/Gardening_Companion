@@ -27,3 +27,58 @@ window.addEventListener('DOMContentLoaded', () => {
         scrollPos = currentTop;
     });
 })
+
+// dashboard modal
+    document.addEventListener('DOMContentLoaded', () => {
+        const plantImages = document.querySelectorAll('.card-img-top');
+        const plantDetailsModal = document.getElementById('plantDetailsModal');
+
+        plantImages.forEach(image => {
+            image.addEventListener('click', () => {
+                // Fetch data attributes
+                const plantId = image.dataset.id;
+                const plantName = image.dataset.name;
+                const plantScientificName = image.dataset.scientificName;
+                const plantYear = image.dataset.year;
+                const plantAuthor = image.dataset.author;
+                const plantStatus = image.dataset.status;
+                const plantRank = image.dataset.rank;
+                const plantFamily = image.dataset.family;
+                const plantGenus = image.dataset.genus;
+                const plantEdible = image.dataset.edible;
+                const plantSaplingDescription = image.dataset.saplingDescription;
+                const plantPlantDescription = image.dataset.plantDescription;
+                const plantImageUrl = image.dataset.imageUrl;
+
+                // Populate modal content
+                document.getElementById('plantImage').src = plantImageUrl;
+                document.getElementById('plantName').textContent = plantName;
+                document.getElementById('plantScientificName').textContent = plantScientificName;
+                document.getElementById('plantYear').textContent = plantYear;
+                document.getElementById('plantAuthor').textContent = plantAuthor;
+                document.getElementById('plantStatus').textContent = plantStatus;
+                document.getElementById('plantRank').textContent = plantRank;
+                document.getElementById('plantFamily').textContent = plantFamily;
+                document.getElementById('plantGenus').textContent = plantGenus;
+                document.getElementById('plantEdible').textContent = plantEdible;
+                document.getElementById('plantSaplingDescription').textContent = plantSaplingDescription;
+                document.getElementById('plantPlantDescription').textContent = plantPlantDescription;
+                document.getElementById('modalPlantId').value = plantId;
+
+                // Show modal
+                const bootstrapModal = new bootstrap.Modal(plantDetailsModal);
+                bootstrapModal.show();
+            });
+        });
+    });
+
+// profile
+    function toggleEdit() {
+        const fields = document.querySelectorAll('.profile-details input');
+        const saveButton = document.getElementById('save-button');
+        const editButton = document.querySelector('[onclick="toggleEdit()"]');
+        
+        fields.forEach(field => field.readOnly = !field.readOnly);
+        saveButton.classList.toggle('d-none');
+        editButton.textContent = fields[0].readOnly ? "Edit Profile" : "Cancel Editing";
+    }

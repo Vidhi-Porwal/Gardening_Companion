@@ -14,31 +14,20 @@ PHONE_REGEX = r'^\+?[0-9]{10,15}$'  # International format or 10-15 digits
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    print('inside login')
     if request.method == 'POST':
-        print('inside post')
         identifier = request.form.get('identifier')
-        print('identifier',identifier)
         password = request.form.get('password')
-        print('password', password)
 
         if not identifier or not password:
-            print('if not id or pass')
             flash('Please provide both identifier and password.', 'danger')
             return redirect(url_for('auth.login'))
-        
-        print('user ke upat')
-        user = User.get_user_by_username_or_phone(identifier)
-        print('user', user)
 
-        print('pasjbfskdbg', user.password_hash)
+        user = User.get_user_by_username_or_phone(identifier)
         if user and check_password_hash(user.password_hash, password):
-            print('if user mai gaya')
             login_user(user)
             # flash('Login successful!', 'success')
             return redirect(url_for('dashboard.dashboard'))
         else:
-            print('else maigay')
             flash('Invalid credentials, please try again.', 'danger')
             return redirect(url_for('auth.login'))
     return render_template('login.html')
@@ -72,3 +61,4 @@ def logout():
     logout_user()
     flash('Logout successful!', 'success')
     return redirect(url_for('auth.login'))
+

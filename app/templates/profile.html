@@ -1,33 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}Profile - Gardening Companion{% endblock %}
 
 {% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center">User Profile</h2>
 
-<div class="profile-container">
-    <h1>User Profile</h1>
-    <div class="profile-field">
-        <label>Full Name:</label>
-        <span id="full-name">John Doe</span>
-    </div>
-    <div class="profile-field">
-        <label>Username:</label>
-        <span id="username">johndoe123</span>
-    </div>
-    <div class="profile-field">
-        <label>Email:</label>
-        <span id="email">johndoe@example.com</span>
-    </div>
-    <div class="profile-field">
-        <label>Phone Number:</label>
-        <span id="phone">+1234567890</span>
-    </div>
-    <div class="profile-field">
-        <label>Status:</label>
-        <span id="status">Active</span>
-    </div>
-    <div class="actions">
-        <button>Edit Profile</button>
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div>
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('main.profile') }}" id="profile-form">
+                <div class="profile-details">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" class="form-control" 
+                        value="{{ user.full_name }}" required pattern="[a-zA-Z\s]+">
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" value="{{ user.username }}" required pattern="^[a-zA-Z0-9_-]{3,20}$" title="Username must be 3-20 characters long and can only contain letters, numbers, underscores, or hyphens.">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" >
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone_no" class="form-label">Phone Number</label>
+                        <input type="text" id="phone_no" name="phone_no" class="form-control" value="{{ user.phone_no }}" >
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-primary" onclick="toggleEdit()">Edit Profile</button>
+                    <button type="submit" class="btn btn-success d-none" id="save-button">Save Changes</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

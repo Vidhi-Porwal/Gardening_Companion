@@ -13,26 +13,26 @@
     <div class="row g-4">
         {% for plant in user_plants %}
         <div class="col-md-4">
-            <div class="card shadow-sm plant-card" data-bs-toggle="modal" data-bs-target="#plantDetailsModal" 
-                 data-id="{{ plant.plant_id }}" data-name="{{ plant.CommonName }}" 
-                 data-scientific-name="{{ plant.ScientificName }}" 
-                 data-year="{{ plant.Year }}" 
-                 data-author="{{ plant.Author }}" 
-                 data-status="{{ plant.Status }}" 
-                 data-rank="{{ plant.Rank }}" 
-                 data-family="{{ plant.FamilyCommonName }}" 
-                 data-genus="{{ plant.Genus }}" 
-                 data-edible="{{ 'Yes' if plant.Edible else 'No' }}" 
-                 data-sapling-description="{{ plant.SaplingDescription }}" 
-                 data-plant-description="{{ plant.PlantDescription }}" 
-                 data-image-url="{{ plant.ImageURL if plant.ImageURL else url_for('static', filename='images/default_plant.jpg') }}">
+            <div class="card shadow-sm plant-card">
                 <img src="{{ plant.ImageURL if plant.ImageURL else url_for('static', filename='images/default_plant.jpg') }}" 
                      class="card-img-top" 
-                     alt="Plant Image">
+                     alt=""
+                     data-id="{{ plant.plant_id }}" 
+                     data-name="{{ plant.CommonName }}" 
+                     data-scientific-name="{{ plant.ScientificName }}" 
+                     data-year="{{ plant.Year }}" 
+                     data-author="{{ plant.Author }}" 
+                     data-status="{{ plant.Status }}" 
+                     data-rank="{{ plant.Rank }}" 
+                     data-family="{{ plant.FamilyCommonName }}" 
+                     data-genus="{{ plant.Genus }}" 
+                     data-edible="{{ 'Yes' if plant.Edible else 'No' }}" 
+                     data-sapling-description="{{ plant.SaplingDescription }}" 
+                     data-plant-description="{{ plant.PlantDescription }}" 
+                     data-image-url="{{ plant.ImageURL if plant.ImageURL else url_for('static', filename='images/default_plant.jpg') }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ plant.CommonName }}</h5>
                     <p class="card-text"><i class="fa-solid fa-box"></i> Quantity: {{ plant.quantity }} </p>
-                    <!-- Watering and Fertilizing Schedule -->
                     <p class="card-text"><i class="fa-solid fa-water"></i> Watering Schedule: {{ plant.watering if plant.watering else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing Schedule: {{ plant.fertilizing if plant.fertilizing else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing type: {{ plant.fertilizer_type if plant.fertilizer_type else 'N/A' }} </p>
@@ -42,10 +42,10 @@
         </div>
         {% endfor %}
     </div>
-
-    <!-- Add Plant Button -->
+    
     <button id="add-plant-btn" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addPlantModal">Add New Plant</button>
 </section>
+    
 
 
 
@@ -58,9 +58,9 @@
                 <button type="button" class="btn-close" name="show_plant" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <img id="plantImage" src="" alt="Plant Image" class="img-fluid mb-3">
-                <h5 id="plantName"></h5>
-                <p><strong>Scientific Name:</strong> <span id="plantScientificName"></span></p>
+                <img id="plantImage" src="" alt="" class="img-fluid mb-3">
+                <h3 id="plantName"></h3>
+                <p><strong>Scientific Name:</strong> <span id="plantScientificName"> </span></p>
                 <p><strong>Year:</strong> <span id="plantYear"></span></p>
                 <p><strong>Author:</strong> <span id="plantAuthor"></span></p>
                 <p><strong>Status:</strong> <span id="plantStatus"></span></p>
@@ -68,7 +68,7 @@
                 <p><strong>Family Common Name:</strong> <span id="plantFamily"></span></p>
                 <p><strong>Genus:</strong> <span id="plantGenus"></span></p>
                 <p><strong>Edible:</strong> <span id="plantEdible"></span></p>
-                <p><strong>Sapling Description:</strong> <span id="plantSaplingDescription"></span></p>
+                <p><strong>Sapling Description:</strong> <span id="plantSaplingDescription"> </span></p>
                 <p><strong>Plant Description:</strong> <span id="plantPlantDescription"></span></p>
 
                 <!-- Remove Plant Button inside Modal -->

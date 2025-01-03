@@ -19,7 +19,7 @@ def dashboard():
         # Fetch user plants and all plants
         user_plants = UserPlant.get_user_plants(current_user.id)
         plants = PlantInfo.get_all_plants()
-        print(user_plants)
+        # print(user_plants)
         # Generate content using Gemini API
         gemini_response = None
         
@@ -32,22 +32,7 @@ def dashboard():
                 if plant_id:
                     try:
                         plant_common_name = UserPlant.get_common_name(plant_id)
-                        # with get_db_connection() as connection:
-                        #     with connection.cursor() as cursor:
-                        #         cursor.execute("SELECT common_name FROM PlantInfo WHERE id = %s", (plant_id,))
-                        #         result = cursor.fetchone()
-                        #         if result:
-                        #             plant_common_name = result[0]
-                        #         else:
-                        #             print(f"No plant found with ID {plant_id}")
-                        #             return "Plant not found", 404
-
-                    # Generate the prompt dynamically
-                        
-                        # updated 
-                    
-                        
-                        
+            
                         
                         model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -102,15 +87,15 @@ def dashboard():
                         print("Plant removed successfully")
                     return redirect(url_for('dashboard.dashboard'))
 
-            if 'show_plant' in request.form:
-                plant_id = request.form.get('plant_id')
-                if plant_id:
-                    result = PlantInfo.get_plant_by_id(plant_id)
-                    if not result:
-                        print("Plant not displayed")
-                    else:
-                        print("Plant displayed")
-                    return redirect(url_for('dashboard.dashboard'),result = result, plant_id = plant_id)
+            # if 'show_plant' in request.form:
+            #     plant_id = request.form.get('plant_id')
+            #     if plant_id:
+            #         result = PlantInfo.get_plant_by_id(plant_id)
+            #         if not result:
+            #             print("Plant not displayed")
+            #         else:
+            #             print("Plant displayed")
+            #         return redirect(url_for('dashboard.dashboard'),result = result, plant_id = plant_id)
 
         # Render the dashboard page with all relevant data
         return render_template('dashboard.html', user_plants=user_plants, plants=plants, gemini_response=gemini_response, chatbot_open=chatbot_open, chat_history=chat_history)
@@ -118,6 +103,7 @@ def dashboard():
     except Exception as e:
         print(f"Error in dashboard: {e}")
         return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
+
 
 
 # genai.configure(api_key="AIzaSyCF9pTtirypeeHUMTohJiepKntkuuP07hI")
@@ -172,10 +158,6 @@ def chatbot():
 
 
 
-@dashboard_bp.route('/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
-    return render_template('profile.html')
 
 
 

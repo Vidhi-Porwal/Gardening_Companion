@@ -81,6 +81,38 @@ class User(UserMixin):
                     return User(**result)
         return None
 
+    @staticmethod
+    def update_user(user_id, full_name, username, email, phone_no):
+        """
+        Updates the user details in the database.
+
+        Args:
+            user_id (int): The ID of the user to update.
+            full_name (str): The updated full name.
+            username (str): The updated username.
+            email (str): The updated email address.
+            phone_no (str): The updated phone number.
+        """
+        with get_db_connection() as connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        UPDATE users
+                        SET full_name = %s, username = %s, email = %s, phone_no = %s
+                        WHERE id = %s
+                        """,
+                        (full_name, username, email, phone_no, user_id)
+                    )
+                    connection.commit()
+                    logging.info(f"User with ID {user_id} updated successfully.")
+            except Exception as e:
+                logging.error(f"Error updating user with ID {user_id}: {e}")
+                connection.rollback()
+                raise
+
+
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
@@ -94,6 +126,7 @@ class User(UserMixin):
                 except Exception as e:
                     logging.error(f"Error updating status: {e}")
                     connection.rollback()
+
 
 # UserPlant model
 class UserPlant:
@@ -134,16 +167,19 @@ class UserPlant:
             except Exception as e:
                 logging.error(f"Error adding plant to user: {e}")
                 connection.rollback()
+
+    @staticmethod            
     def get_common_name(plant_id):
         with get_db_connection() as connection:
-                                with connection.cursor() as cursor:
-                                    cursor.execute("SELECT CommonName FROM PlantInfo WHERE id = %s", (plant_id,))
-                                    result = cursor.fetchone()
-                                    if result:
-                                        return result
-                                    else:
-                                        print(f"No plant found with ID {plant_id}")
-                                        return "Plant not found", 404
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT CommonName FROM PlantInfo WHERE id = %s", (plant_id,))
+                result = cursor.fetchone()
+                if result:
+                    return result
+                else:
+                    print(f"No plant found with ID {plant_id}")
+                    return "Plant not found", 404
+
     @staticmethod
     def remove_plant_from_user(user_id, plant_id):
         with get_db_connection() as connection:
@@ -169,7 +205,6 @@ class UserPlant:
                 logging.error(f"Error removing plant from user: {e}")
                 connection.rollback()
                 return False
-
 
 
 # PlantInfo model

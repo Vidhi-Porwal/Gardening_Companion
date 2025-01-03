@@ -2,6 +2,7 @@ from flask import Flask
 from flask_login import LoginManager
 import pymysql
 import os
+from .models import User
 
 # Initialize extensions
 login_manager = LoginManager()
@@ -18,8 +19,8 @@ def create_app():
     # Load configurations
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'DEV')
     app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'localhost')
-    app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'admin')
-    app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', 'Gurpreet@2309')
+    app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'root')
+    app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', 'Vidhi@3112')
     app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'gardening_companion')
 
     # Set up MySQL connection

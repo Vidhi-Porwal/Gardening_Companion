@@ -5141,6 +5141,8 @@ textarea.form-control-lg {
 .modal-title {
   margin-bottom: 0;
   line-height: var(--bs-modal-title-line-height);
+  text-align: center; /* Centers the title horizontally */
+  width: 100%; /* Ensures the title spans the modal width */
 }
 
 .modal-body {
@@ -5277,6 +5279,66 @@ textarea.form-control-lg {
     overflow-y: auto;
   }
 }
+
+/* General Modal Styles */
+.modal {
+  --modal-padding: 1rem;
+  --modal-margin: 1.75rem;
+  --modal-bg: #fff;
+  --modal-border-color: rgba(0, 0, 0, 0.1);
+  --modal-border-width: 1px;
+  --modal-border-radius: 0.5rem;
+  --modal-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Add Plant Modal Configuration */
+#addPlantModal .modal-dialog {
+  max-width: 500px; /* Default size */
+  margin: var(--modal-margin) auto;
+}
+
+#addPlantModal .modal-content {
+  padding: var(--modal-padding);
+  border-radius: var(--modal-border-radius);
+  border: var(--modal-border-width) solid var(--modal-border-color);
+  background-color: var(--modal-bg);
+}
+
+/* Plant Description Modal Configuration */
+#plantDetailsModal .modal-dialog {
+  max-width: 1200px; /* Wider layout */
+  margin: var(--modal-margin) auto;
+}
+
+#plantDetailsModal .modal-content {
+  padding: var(--modal-padding);
+  border-radius: var(--modal-border-radius);
+  border: var(--modal-border-width) solid var(--modal-border-color);
+  background-color: var(--modal-bg);
+}
+
+#plantDetailsModal .modal-body img {
+  max-width: 300px; /* Fixed image size */
+  max-height: 300px;
+  margin-bottom: 1rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#plantDetailsModal .modal-body p {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 575.98px) {
+  #addPlantModal .modal-dialog,
+  #plantDetailsModal .modal-dialog {
+    max-width: 90%; /* Reduce size for small screens */
+  }
+}
+
 .tooltip {
   --bs-tooltip-zindex: 1080;
   --bs-tooltip-max-width: 200px;
