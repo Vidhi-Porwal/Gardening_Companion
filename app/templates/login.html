@@ -25,12 +25,12 @@
             <form method="POST" action="{{ url_for('auth.login') }}">
                 <div class="mb-3">
                     <label for="identifier" class="form-label">Username or Phone Number</label>
-                    <input type="text" id="identifier" name="identifier" class="form-control" required placeholder="Enter your username or phone number">
+                    <input type="text" id="identifier" name="identifier" class="form-control" required placeholder="Enter your username or phone number" minlength="5" maxlength="15">
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-group">
-                        <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
+                        <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password"minlength="5" maxlength="15">
                         <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">Show</button>
                     </div>
                     <small class="form-text text-muted">Enter the password associated with your account.</small>
