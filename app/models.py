@@ -19,7 +19,7 @@ def get_db_connection():
 
 # User model
 class User(UserMixin):
-    def __init__(self, id, full_name, username, email, password_hash, phone_no, status, **kwargs):
+    def __init__(self, id, full_name, username, email, password_hash, phone_no, status, role, **kwargs):
         self.id = id
         self.full_name = full_name
         self.username = username
@@ -27,12 +27,13 @@ class User(UserMixin):
         self.password_hash = password_hash
         self.phone_no = phone_no
         self.status = status
+        self.role = role
 
     @staticmethod
     def get_user_by_id(user_id):
         with get_db_connection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT id, full_name, username, email, password_hash, phone_no, status FROM users WHERE id = %s", (user_id,))
+                cursor.execute("SELECT id, full_name, username, email, password_hash, phone_no, status, role FROM users WHERE id = %s", (user_id,))
                 result = cursor.fetchone()
                 if result:
                     return User(**result)
@@ -56,8 +57,8 @@ class User(UserMixin):
                 with connection.cursor() as cursor:
                     cursor.execute(
                         """
-                        INSERT INTO users (full_name, username, email, password_hash, phone_no, status)
-                        VALUES (%s, %s, %s, %s, %s, 'active')
+                        INSERT INTO users (full_name, username, email, password_hash, phone_no, status, role)
+                        VALUES (%s, %s, %s, %s, %s, 'active', 'client')
                         """,
                         (full_name, username, email, password_hash, phone_no)
                     )
@@ -72,7 +73,7 @@ class User(UserMixin):
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT id, full_name, username, email, password_hash, phone_no, status FROM users WHERE username = %s OR phone_no = %s
+                    SELECT id, full_name, username, email, password_hash, phone_no, status, role FROM users WHERE username = %s OR phone_no = %s
                     """,
                     (identifier, identifier)
                 )
@@ -127,6 +128,8 @@ class User(UserMixin):
                     logging.error(f"Error updating status: {e}")
                     connection.rollback()
 
+    def is_authenticated(self):
+        return True
 
 # UserPlant model
 class UserPlant:
