@@ -7,7 +7,8 @@ CREATE TABLE users (
     phone_no VARCHAR(15) NOT NULL UNIQUE,
     status ENUM('active', 'inactive', 'banned') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    role ENUM('client', 'admin') DEFAULT 'client'
 );
 
 CREATE TABLE IF NOT EXISTS PlantInfo (
