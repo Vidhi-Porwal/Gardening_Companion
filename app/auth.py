@@ -25,6 +25,15 @@ def login():
         user = User.get_user_by_username_or_phone(identifier)
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
+            user_role = user.role
+            print(f"User Role: {user_role}") 
+
+            # Redirect based on role if necessary
+            if user_role == 'admin':
+                return redirect(url_for('dashboard.admin_dashboard'))  # Example admin route
+            elif user_role == 'user':
+                return redirect(url_for('dashboard.dashboard'))
+
             # flash('Login successful!', 'success')
             return redirect(url_for('dashboard.dashboard'))
         else:
@@ -55,10 +64,11 @@ def signup():
             return redirect(url_for('auth.login'))
     return render_template('signup.html')
 
-@auth.route('/logout')
+@auth.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
-    logout_user()
-    flash('Logout successful!', 'success')
-    return redirect(url_for('auth.login'))
+    if request.method == 'POST':
+        logout_user()
+        return redirect(url_for('auth.login'))  # Redirect to login page after logout
+    return redirect(url_for('auth.login')) 
 
