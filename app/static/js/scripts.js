@@ -82,3 +82,12 @@ window.addEventListener('DOMContentLoaded', () => {
         saveButton.classList.toggle('d-none');
         editButton.textContent = fields[0].readOnly ? "Edit Profile" : "Cancel Editing";
     }
+
+    function scrollToBottom() {
+        var chatBody = document.getElementById('chat-body');
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+    
+    // Ensure we scroll on page load and when a new message is sent
+    window.onload = scrollToBottom; // Scroll when the page is loaded
+    document.querySelector('form').onsubmit = scrollToBottom;

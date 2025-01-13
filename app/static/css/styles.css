@@ -10,6 +10,74 @@
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+
+ .message {
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.user-message {
+  margin-left: auto;
+  background-color: #f8f9fa;
+}
+
+.bot-message {
+  margin-right: auto;
+  background-color: #f0f8ff;
+}
+
+.formatted-content {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.formatted-content strong {
+  color: #2c5282;
+  font-weight: 600;
+}
+
+.formatted-content p {
+  margin-bottom: 0.5rem;
+}
+
+.formatted-content ul, .formatted-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-body {
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.chat-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.chat-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.chat-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.input-group .form-control {
+  border-right: none;
+}
+
+.input-group .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+
 :root {
   --bs-blue: #0d6efd;
   --bs-indigo: #6610f2;

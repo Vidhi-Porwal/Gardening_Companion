@@ -115,37 +115,77 @@
             <i class="fa-solid fa-comments"></i>
         </button>
     </form>
-    
-    <!-- Chatbox -->
-    {% if chatbot_open %}
-    <div class="chatbox">
-        <div class="chatbox-header">
-            <h6>Plantie 🌻</h6>
+ 
+    <div class="container-fluid">
+        {% if chatbot_open %}
+        <div class="card shadow" style="position: absolute; bottom: 70px; right: 0; width: 500px;">
+            <div class="card-header bg-primary text-white">
+                <h6>Plantie 🌻</h6>
+            </div>
+            <div id="chat-body" class="card-body chat-body" style="height: 300px; overflow-y: auto; padding-right: 10px;">
+                {% if chat_history %}
+                    {% for message in chat_history %}
+                        {% if loop.index0 % 2 == 0 %}
+                            <div class="message user-message mb-3">
+                                <p class="text-end text-primary mb-1">You</p>
+                                <p class="text-end text-primary">
+                                    {% if message is string %}
+                                        {{ message }}
+                                    {% else %}
+                                        {{ message.content if message.content is defined else message }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="message bot-message mb-3">
+                                <p class="text-start text-success mb-1">Plantie 🌻</p>
+                                <div class="text-start formatted-content">
+                                    {% if message is string %}
+                                        {% set content = message %}
+                                    {% else %}
+                                        {% set content = message.content if message.content is defined else message %}
+                                    {% endif %}
+                                    
+                                    {% set formatted_content = content | replace("{'role': 'User', 'content': '", "") 
+                                                                       | replace("{'role': 'Plantie 🌼', 'content': '", "")
+                                                                       | replace("'}", "") %}
+                                    
+                                    {% for line in formatted_content.split('\n') %}
+                                        {% if '**' in line %}
+                                            {% set bold_text = line | replace("**", "<strong>", 1) | replace("**", "</strong>", 1) %}
+                                            <p class="mb-2">{{ bold_text | safe }}</p>
+                                        {% else %}
+                                            <p class="mb-2">{{ line }}</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center">
+                        <p class="text-muted">Hi! I am Plantie 🌻. Ask me anything about plants! 😊</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-light">
+                <form method="POST" action="{{ url_for('dashboard.chatbot') }}" class="mb-0">
+                    <div class="input-group">
+                        <input type="text" 
+                               name="message" 
+                               class="form-control" 
+                               placeholder="Type your message..." 
+                               required 
+                               autocomplete="off">
+                        <button class="btn btn-success" type="submit">
+                            Send
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="chatbox-body">
-            {% if chat_history %}
-                {% for message in chat_history %}
-                    {% if loop.index0 is divisibleby 2 %}
-                        <p class="message-outgoing">{{ message }}</p>
-                    {% else %}
-                        <p class="message-incoming">{{ message }}</p>
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                <p class="text-muted">Hi! I am Plantie 🌻. Ask me anything about plants! 😊</p>
-            {% endif %}
-        </div>
-        <div class="chatbox-footer">
-            <form method="POST" action="{{ url_for('dashboard.chatbot') }}">
-                <div class="input-group">
-                    <input type="text" name="message" class="form-control" placeholder="Type your message..." required>
-                    <button class="btn btn-success" type="submit">Send</button>
-                </div>
-            </form>
-        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
-
 
 {% endblock %}
