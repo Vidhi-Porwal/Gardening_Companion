@@ -82,7 +82,6 @@ window.addEventListener('DOMContentLoaded', () => {
         saveButton.classList.toggle('d-none');
         editButton.textContent = fields[0].readOnly ? "Edit Profile" : "Cancel Editing";
     }
-
     function scrollToBottom() {
         var chatBody = document.getElementById('chat-body');
         chatBody.scrollTop = chatBody.scrollHeight;
