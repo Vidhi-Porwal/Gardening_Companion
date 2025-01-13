@@ -8,7 +8,7 @@ from functools import wraps
 dashboard_bp = Blueprint('dashboard', __name__)
 
 # Configure the Gemini API
-api_key = os.getenv("GENAI_API_KEY", "AIzaSyCLCHIqeaIAHUXRrWLsgDTfftziD9BCqO0")  # Use environment variable for API key
+api_key = os.getenv("GENAI_API_KEY", "AIzaSyCF9pTtirypeeHUMTohJiepKntkuuP07hI")  # Use environment variable for API key
 genai.configure(api_key=api_key)
 
 def role_required(role):
@@ -105,7 +105,8 @@ def dashboard():
             #         return redirect(url_for('dashboard.dashboard'),result = result, plant_id = plant_id)
 
         # Render the dashboard page with all relevant data
-        return render_template('dashboard.html', user_plants=user_plants, plants=plants, gemini_response=gemini_response, chatbot_open=chatbot_open, chat_history=chat_history)
+        return render_template ('dashboard.html', user_plants=user_plants, plants=plants, gemini_response=gemini_response, chatbot_open=chat_session.is_open,  # Updated to use chat_session
+            chat_history=chat_session.chat_history )
 
     except Exception as e:
         print(f"Error in dashboard: {e}")
@@ -131,55 +132,100 @@ def parse_gemini_response(response_text):
         print(f"Error parsing response: {e}")
     return data
 
-# genai.configure(api_key="AIzaSyCF9pTtirypeeHUMTohJiepKntkuuP07hI")
+# genai.configure(api_key="")
 model = genai.GenerativeModel("gemini-1.5-flash")
-chatbot_open = False  # Global variable to track chatbot visibility
-chat_history = []  # Global variable to store chat history
-def chatbot_response(prompt, chat_history=[]):
-    if chat_history:
-        prompt = "\n".join(chat_history) + "\n" + prompt
 
-    concise_prompt = f"Please answer briefly: {prompt}"
+class ChatSession:
+    def __init__(self):
+        self.chat_history = []
+        self.is_open = False
+
+    def add_message(self, role, content):
+        self.chat_history.append({"role": role, "content": content})
+
+chat_session = ChatSession()
+
+def create_structured_prompt(user_input, chat_history):
+    # Create a more specific prompt structure
+    base_prompt = """
+    As a plant expert, provide detailed, specific answers about:
+    - Plant care and maintenance
+    - Plant diseases and treatments
+    - Gardening techniques
+    - Plant identification
+    - Botanical information
+    
+    Format your response as:
+    1. Direct answer to the question
+    2. Additional relevant details
+    
+    if answer is not plant specific reply: please ask plant specific questions!!
+    
+    Previous context:
+    {context}
+    
+    Current question: {question}
+    """
+    
+    # Format the context from chat history
+    context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history[-15:]])  # Last 15 messages
+    return base_prompt.format(context=context, question=user_input)
+
+def chatbot_response(prompt, chat_history):
     try:
-        response = model.generate_content(concise_prompt)
-        if response and hasattr(response, "text") and response.text:
-            return response.text
-        return "Sorry, I couldn't generate a response. Try again!"
+        # Create structured prompt
+        full_prompt = create_structured_prompt(prompt, chat_history)
+        
+        # Generate response with specific parameters
+        response = model.generate_content(
+            full_prompt,
+            generation_config={
+                'temperature': 0.7,  # Balance between creativity and consistency
+                'top_p': 0.8,        # Nucleus sampling parameter
+                'top_k': 40,         # Limit vocabulary diversity
+                'max_output_tokens': 500  # Reasonable response length
+            }
+        )
+        
+        if response and hasattr(response, "text"):
+            # Process the response to ensure it's specific
+            processed_response = response.text.strip()
+            
+            # Verify if response is plant-related
+            # if not any(keyword in processed_response.lower() for keyword in 
+            #           ['plant', 'garden', 'soil', 'water', 'grow', 'leaf', 'root']):
+            #     return "Please ask only plant-related questions!"
+                
+            return processed_response
+            
+        return "I apologize, but I couldn't generate a specific response. Please try rephrasing your question."
+    
     except Exception as e:
-        return "Error occurred while processing your request. Please try again!"
+        return f"An error occurred: {str(e)}. Please try again with a different question."
 
-
-
-# Route to toggle the chatbot visibility
 @dashboard_bp.route('/chatbot_toggle', methods=['POST'])
 @login_required
 def chatbot_toggle():
-    global chatbot_open
-    chatbot_open = not chatbot_open
+    chat_session.is_open = not chat_session.is_open
     return redirect(url_for('dashboard.dashboard'))
 
-
-
-
-# Route to handle chatbot interactions
 @dashboard_bp.route('/chatbot', methods=['POST'])
 @login_required
 def chatbot():
-    global chat_history
-
-    # Get user input from form
-    user_message = request.form.get("message")
+    user_message = request.form.get("message", "").strip()
+    
     if not user_message:
         return redirect(url_for('dashboard.dashboard'))
-
-    # Add user message to chat history
-    chat_history.append(f"You: {user_message}")
-
-    # Generate chatbot response
-    chatbot_reply = chatbot_response(user_message, chat_history)
-    chat_history.append(f"Plantie 🌼: {chatbot_reply}")
-
+    
+    # Add user message to history
+    chat_session.add_message("User", user_message)
+    
+    # Generate and add bot response
+    response = chatbot_response(user_message, chat_session.chat_history)
+    chat_session.add_message("Plantie 🌼", response)
+    
     return redirect(url_for('dashboard.dashboard'))
+
 
 @dashboard_bp.route('/admin', methods=['GET', 'POST'], endpoint='admin_dashboard')
 @role_required('admin')  # Restrict access to admins only
