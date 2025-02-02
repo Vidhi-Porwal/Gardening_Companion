@@ -1,26 +1,24 @@
-from flask_login import UserMixin
 from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
-import pymysql
 import logging
-from contextlib import contextmanager
+from flask_login import UserMixin
+
 
 # Set up logging
 logging.basicConfig(level=logging.ERROR)
 
-# Context manager for DB connections
-@contextmanager
-def get_db_connection():
-    connection = current_app.config['DB_CONNECTION']()
-    try:
-        yield connection
-    finally:
-        connection.close()
+# MongoDB Helper
+def get_db_collection(collection_name):
+    """
+    Helper function to get a MongoDB collection.
+    """
+    db = current_app.config['DB_CONNECTION']
+    return db[collection_name]
 
-# User model
+# User Model
 class User(UserMixin):
-    def __init__(self, id, full_name, username, email, password_hash, phone_no, status, role, **kwargs):
-        self.id = id
+    def __init__(self, id=None, full_name=None, username=None, email=None, password_hash=None, phone_no=None, status=None, role=None, **kwargs):
+        self.id = str(id)
         self.full_name = full_name
         self.username = username
         self.email = email
@@ -29,210 +27,133 @@ class User(UserMixin):
         self.status = status
         self.role = role
 
+    def is_active(self):
+        """Returns True if the user is active."""
+        return self.status == 'active'
+
+    def is_authenticated(self):
+        """Returns True if the user is authenticated."""
+        return True  # Flask-Login sets this to True when a user logs in.
+
+    def is_anonymous(self):
+        """Returns False since this is not an anonymous user."""
+        return False
+
+    def get_id(self):
+        """Returns the user's ID as a string."""
+        return str(self.id)
+
     @staticmethod
     def get_user_by_id(user_id):
-        with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT id, full_name, username, email, password_hash, phone_no, status, role FROM users WHERE id = %s", (user_id,))
-                result = cursor.fetchone()
-                if result:
-                    return User(**result)
-        return None
+        collection = get_db_collection("users")
+        result = collection.find_one({"_id": user_id})
+        return User(**result) if result else None
 
     @staticmethod
     def get_user_by_email(email):
-        with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT id, full_name, username, email, password_hash, phone_no, status FROM users WHERE email = %s", (email,))
-                result = cursor.fetchone()
-                if result:
-                    return User(**result)
-        return None
+        collection = get_db_collection("users")
+        result = collection.find_one({"email": email})
+        return User(**result) if result else None
 
     @staticmethod
     def create_user(full_name, username, email, password, phone_no):
         password_hash = generate_password_hash(password)
-        with get_db_connection() as connection:
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        """
-                        INSERT INTO users (full_name, username, email, password_hash, phone_no, status, role)
-                        VALUES (%s, %s, %s, %s, %s, 'active', 'client')
-                        """,
-                        (full_name, username, email, password_hash, phone_no)
-                    )
-                    connection.commit()
-            except Exception as e:
-                logging.error(f"Error creating user: {e}")
-                connection.rollback()
-
-    @staticmethod
-    def get_user_by_username_or_phone(identifier):
-        with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT id, full_name, username, email, password_hash, phone_no, status, role FROM users WHERE username = %s OR phone_no = %s
-                    """,
-                    (identifier, identifier)
-                )
-                result = cursor.fetchone()
-                if result:
-                    return User(**result)
-        return None
+        collection = get_db_collection("users")
+        try:
+            user_data = {
+                "full_name": full_name,
+                "username": username,
+                "email": email,
+                "password_hash": password_hash,
+                "phone_no": phone_no,
+                "status": "active",
+                "role": "client"
+            }
+            collection.insert_one(user_data)
+        except Exception as e:
+            logging.error(f"Error creating user: {e}")
 
     @staticmethod
     def update_user(user_id, full_name, username, email, phone_no):
-        """
-        Updates the user details in the database.
-
-        Args:
-            user_id (int): The ID of the user to update.
-            full_name (str): The updated full name.
-            username (str): The updated username.
-            email (str): The updated email address.
-            phone_no (str): The updated phone number.
-        """
-        with get_db_connection() as connection:
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        """
-                        UPDATE users
-                        SET full_name = %s, username = %s, email = %s, phone_no = %s
-                        WHERE id = %s
-                        """,
-                        (full_name, username, email, phone_no, user_id)
-                    )
-                    connection.commit()
-                    logging.info(f"User with ID {user_id} updated successfully.")
-            except Exception as e:
-                logging.error(f"Error updating user with ID {user_id}: {e}")
-                connection.rollback()
-                raise
-
-
+        collection = get_db_collection("users")
+        try:
+            collection.update_one(
+                {"_id": user_id},
+                {"$set": {"full_name": full_name, "username": username, "email": email, "phone_no": phone_no}}
+            )
+            logging.info(f"User with ID {user_id} updated successfully.")
+        except Exception as e:
+            logging.error(f"Error updating user with ID {user_id}: {e}")
+            raise
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
     def update_status(self, new_status):
         if new_status in ['active', 'inactive', 'banned']:
-            with get_db_connection() as connection:
-                try:
-                    with connection.cursor() as cursor:
-                        cursor.execute("UPDATE users SET status = %s WHERE id = %s", (new_status, self.id))
-                        connection.commit()
-                except Exception as e:
-                    logging.error(f"Error updating status: {e}")
-                    connection.rollback()
+            collection = get_db_collection("users")
+            try:
+                collection.update_one({"_id": self.id}, {"$set": {"status": new_status}})
+            except Exception as e:
+                logging.error(f"Error updating status: {e}")
 
-    def is_authenticated(self):
-        return True
+    @staticmethod
+    def get_all_users():
+        collection = get_db_collection("users")
+        results = collection.find({})
+        return [User(**result) for result in results]
 
-# UserPlant model
+# UserPlant Model
 class UserPlant:
     @staticmethod
     def get_user_plants(user_id):
-        with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT up.plant_id, p.CommonName, p.ScientificName, p.ImageURL,
-                           up.quantity, p.FamilyCommonName, p.Genus, p.Edible, 
-                           p.SaplingDescription, p.PlantDescription, p.Status, p.Rank,
-                           up.watering,up.fertilizing,up.fertilizer_type,up.sunlight
-                    FROM UserPlant up
-                    JOIN PlantInfo p ON up.plant_id = p.ID
-                    WHERE up.user_id = %s
-                    """,
-                    (user_id,)
-                )
-                return cursor.fetchall()
+        collection = get_db_collection("user_plants")
+        results = collection.find({"user_id": user_id})
+        return list(results)
 
-
-   
     @staticmethod
     def add_plant_to_user(user_id, plant_id, watering, fertilizing, sunlight, fertilizer_type, quantity):
-        with get_db_connection() as connection:
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        """
-                        INSERT INTO UserPlant(user_id, plant_id, quantity, watering, fertilizing, sunlight, fertilizer_type)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
-                        ON DUPLICATE KEY UPDATE quantity = quantity + %s
-                        """,
-                        (user_id, plant_id, quantity, watering, fertilizing, sunlight, fertilizer_type, quantity)
-                    )
-                    connection.commit()
-            except Exception as e:
-                logging.error(f"Error adding plant to user: {e}")
-                connection.rollback()
+        collection = get_db_collection("user_plants")
+        try:
+            collection.update_one(
+                {"user_id": user_id, "plant_id": plant_id},
+                {"$set": {
+                    "watering": watering,
+                    "fertilizing": fertilizing,
+                    "sunlight": sunlight,
+                    "fertilizer_type": fertilizer_type,
+                }, "$inc": {"quantity": quantity}},
+                upsert=True
+            )
+        except Exception as e:
+            logging.error(f"Error adding plant to user: {e}")
 
-    @staticmethod            
+    @staticmethod
     def get_common_name(plant_id):
-        with get_db_connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT CommonName FROM PlantInfo WHERE id = %s", (plant_id,))
-                result = cursor.fetchone()
-                if result:
-                    return result
-                else:
-                    print(f"No plant found with ID {plant_id}")
-                    return "Plant not found", 404
+        collection = get_db_collection("plants")
+        result = collection.find_one({"_id": plant_id}, {"CommonName": 1})
+        return result.get("CommonName") if result else None
 
     @staticmethod
     def remove_plant_from_user(user_id, plant_id):
-        with get_db_connection() as connection:
-            try:
-                with connection.cursor() as cursor:
-                    # Check if the plant exists
-                    cursor.execute(
-                        "SELECT 1 FROM UserPlant WHERE user_id = %s AND plant_id = %s",
-                        (user_id, plant_id)
-                    )
-                    if not cursor.fetchone():
-                        logging.warning(f"Plant not found for removal (user_id={user_id}, plant_id={plant_id})")
-                        return False  # No record found
-                    
-                    # Perform deletion
-                    cursor.execute(
-                        "DELETE FROM UserPlant WHERE user_id = %s AND plant_id = %s",
-                        (user_id, plant_id)
-                    )
-                    connection.commit()
-                    return True
-            except Exception as e:
-                logging.error(f"Error removing plant from user: {e}")
-                connection.rollback()
-                return False
+        collection = get_db_collection("user_plants")
+        try:
+            result = collection.delete_one({"user_id": user_id, "plant_id": plant_id})
+            return result.deleted_count > 0
+        except Exception as e:
+            logging.error(f"Error removing plant from user: {e}")
+            return False
 
-
-# PlantInfo model
+# PlantInfo Model
 class PlantInfo:
     @staticmethod
     def get_all_plants():
-        with get_db_connection() as connection:
-            # import pdb; pdb.set_trace();
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute("SELECT ID, CommonName FROM PlantInfo")
-                    results = cursor.fetchall()
-                    return results
-            except Exception as e:
-                logging.error(f"Error fetching plants: {e}")
-                return []
+        collection = get_db_collection("plants")
+        results = collection.find({}, {"_id": 1, "CommonName": 1, "ScientificName": 1})
+        return list(results)
 
     @staticmethod
-    def get_plant_by_id():
-        with get_db_connection() as connection:
-            try:
-                with connection.cursor() as cursor:
-                    cursor.execute("SELECT * FROM PlantInfo WHERE ID = %s")
-                    result = cursor.fetchone()
-                    return result
-            except Exception as e:
-                logging.error(f"Error fetching plants: {e}")
-                return []
+    def get_plant_by_id(plant_id):
+        collection = get_db_collection("plants")
+        result = collection.find_one({"_id": plant_id})
+        return result

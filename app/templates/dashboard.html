@@ -7,8 +7,40 @@
     <!-- Dashboard Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Your Plants</h2>
-    </div>
 
+        <!-- Garden Selection Dropdown -->
+        <div class="garden-dropdown">
+            <label for="gardenSelector" class="me-2">Select Garden:</label>
+            <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
+                <option value="default">My Garden (Default)</option>
+                {% for garden in gardens %}
+                    <option value="{{ garden.id }}">{{ garden.name }}</option>
+                {% endfor %}
+                <option value="add">+ Add New Garden</option>
+            </select>
+        </div>
+
+        <!-- Modal for Adding a New Garden -->
+        <div id="addGardenModal" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Garden</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="{{ url_for('dashboard.add_garden') }}">
+                            <div class="mb-3">
+                                <label for="newGardenName" class="form-label">Garden Name:</label>
+                                <input type="text" id="newGardenName" name="garden_name" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Garden</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    
     <!-- Display User Plants -->
     <div class="row g-4">
         {% for plant in user_plants %}
@@ -18,7 +50,7 @@
                      class="card-img-top" 
                      alt=""
                      data-id="{{ plant.plant_id }}" 
-                     data-name="{{ plant.CommonName }}" 
+                     data-name="{{ plant.commonName }}" 
                      data-scientific-name="{{ plant.ScientificName if plant.ScientificName else '--'}}" 
                      data-year="{{ plant.Year if plant.Year else '--'}}" 
                      data-author="{{ plant.Author if plant.Author else '--' }}" 
@@ -31,17 +63,27 @@
                      data-plant-description="{{ plant.PlantDescription }}" 
                      data-image-url="{{ plant.ImageURL if plant.ImageURL else url_for('static', filename='images/default_plant.jpg') }}">
                 <div class="card-body">
-                    <h5 class="card-title">{{ plant.CommonName }}</h5>
-                    <p class="card-text"><i class="fa-solid fa-box"></i> Quantity: {{ plant.quantity }} </p>
+                    <h5 class="card-title">{{ plant.commonName }}</h5>
+                    <!-- <p class="card-text"><i class="fa-solid fa-box"></i> Quantity: {{ plant.quantity }} </p> -->
                     <p class="card-text"><i class="fa-solid fa-water"></i> Watering Schedule: {{ plant.watering if plant.watering else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing Schedule: {{ plant.fertilizing if plant.fertilizing else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing type: {{ plant.fertilizer_type if plant.fertilizer_type else 'N/A' }} </p>
-                    <p class="card-text"><i class="fa-solid fa-seedling"></i> Sunlight {{ plant.sunlight if plant.sunlight else 'N/A' }} </p>
+                    <p class="card-text"><i class="fa-solid fa-seedling"></i>Sunlight: 
+                        {% if plant.sunlight == 1 %}
+                            Full Sunlight
+                        {% elif plant.sunlight == 2 %}
+                            Partial Sunlight
+                        {% elif plant.sunlight == 3 %}
+                            No Sunlight
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </div>
         {% endfor %}
-    </div>
+
     
     <button id="add-plant-btn" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addPlantModal">Add New Plant</button>
 </section>
@@ -97,7 +139,7 @@
                         <select id="plant_id" class="form-control" name="plant_id" required>
                             <option value="" disabled selected>Select a plant</option>
                             {% for plant in plants %}
-                                <option value="{{ plant.ID }}">{{ plant.CommonName }}</option>
+                                <option value="{{ plant.ID }}">{{ plant.commonName }}</option>
                             {% endfor %}
                         </select>
                     </div>

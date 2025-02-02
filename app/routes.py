@@ -1,7 +1,6 @@
-### routes.py ###
-from flask import render_template, Blueprint, request, flash, redirect, url_for
+##routes.py##
+from flask import render_template, Blueprint, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from .models import User
 
 main = Blueprint('main', __name__)
 
@@ -12,6 +11,8 @@ def home():
 @main.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    db = current_app.config['DB_CONNECTION']  # Access MongoDB connection
+
     if request.method == 'POST':
         # Retrieve form data
         full_name = request.form.get('full_name')
@@ -25,22 +26,38 @@ def profile():
             flash('All fields except status are required.', 'danger')
         else:
             try:
-                # Use the update_user method from the User model
-                User.update_user(
-                    user_id=current_user.id,
-                    full_name=full_name,
-                    username=username,
-                    email=email,
-                    phone_no=phone_no
-                )
+                # Check if username or email is already taken by another user
+                existing_user = db.users.find_one({
+                    "$or": [
+                        {"username": username, "_id": {"$ne": current_user.id}},
+                        {"email": email, "_id": {"$ne": current_user.id}}
+                    ]
+                })
 
-                # Update `current_user` attributes for immediate reflection
-                current_user.full_name = full_name
-                current_user.username = username
-                current_user.email = email
-                current_user.phone_no = phone_no
+                if existing_user:
+                    flash('Username or email is already taken by another user.', 'danger')
+                else:
+                    # Update user data in MongoDB
+                    db.users.update_one(
+                        {"_id": current_user.id},
+                        {"$set": {
+                            "full_name": full_name,
+                            "username": username,
+                            "email": email,
+                            "phone_no": phone_no,
+                            "status": status
+                        }}
+                    )
 
-                flash('Profile updated successfully!', 'success')
+                    # Update `current_user` attributes for immediate reflection
+                    current_user.full_name = full_name
+                    current_user.username = username
+                    current_user.email = email
+                    current_user.phone_no = phone_no
+                    current_user.status = status
+
+                    flash('Profile updated successfully!', 'success')
+
             except Exception as e:
                 flash('An error occurred while updating your profile. Please try again.', 'danger')
                 print(f"Error updating profile: {e}")

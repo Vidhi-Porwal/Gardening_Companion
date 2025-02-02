@@ -1,8 +1,124 @@
-### auth.py ###
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from werkzeug.security import check_password_hash
+# ##auth.py##
+# from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+# from werkzeug.security import generate_password_hash, check_password_hash
+# from flask_login import login_user, logout_user, login_required
+# import re
+
+# auth = Blueprint('auth', __name__)
+
+# # Regular expressions for validation
+# EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+# PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#_]{8,}$'  # At least 8 characters, 1 letter, and 1 number
+# PHONE_REGEX = r'^\+?[0-9]{10,15}$'  # International format or 10-15 digits
+
+# @auth.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         identifier = request.form.get('identifier')
+#         password = request.form.get('password')
+
+#         if not identifier or not password:
+#             flash('Please provide both identifier and password.', 'danger')
+#             return redirect(url_for('auth.login'))
+
+#         # Access MongoDB
+#         db = current_app.config['DB_CONNECTION']
+
+#         # Search user by email, username, or phone
+#         user = db.users.find_one({
+#             "$or": [
+#                 {"username": identifier},
+#                 {"email": identifier},
+#                 {"phone_no": identifier}
+#             ]
+#         })
+
+#         if user and check_password_hash(user['password_hash'], password):
+#             # Create a user object to pass to login_user
+#             from .models import User
+#             user_obj = User(
+#                 id=user['_id'],
+#                 username=user['username'],
+#                 email=user['email'],
+#                 phone_no=user['phone_no'],
+#                 role=user.get('role', 'user')  # Default to 'user' if no role specified
+#             )
+#             print ('111111111', user_obj.username, user_obj.email, user_obj.phone_no)
+#             print ('0000000000000000', user_obj)
+#             login_user(user_obj)
+
+#             # Redirect based on role if necessary
+#             user_role = user.get('role', 'user')  # Default to 'user' role
+#             print(f"User Role: {user_role}")
+
+#             if user_role == 'admin':
+#                 return redirect(url_for('dashboard.admin_dashboard'))  # Example admin route
+#             elif user_role == 'user':
+#                 return redirect(url_for('dashboard.dashboard'))
+
+#             return redirect(url_for('dashboard.dashboard'))
+#         else:
+#             flash('Invalid credentials, please try again.', 'danger')
+#             return redirect(url_for('auth.login'))
+#     return render_template('login.html')
+
+
+# @auth.route('/signup', methods=['GET', 'POST'])
+# def signup():
+#     if request.method == 'POST':
+#         full_name = request.form['full_name']
+#         username = request.form['username']
+#         email = request.form['email']
+#         password = request.form['password']
+#         phone_no = request.form['phone_no']
+
+#         # Validate input
+#         if not re.match(EMAIL_REGEX, email):
+#             flash('Invalid email format.', 'danger')
+#         elif not re.match(PASSWORD_REGEX, password):
+#             flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
+#         elif not re.match(PHONE_REGEX, phone_no):
+#             flash('Invalid phone number.', 'danger')
+#         else:
+#             # Access MongoDB
+#             db = current_app.config['DB_CONNECTION']
+
+#             # Check if email or username already exists
+#             if db.users.find_one({"email": email}):
+#                 flash('Email is already registered.', 'danger')
+#             elif db.users.find_one({"username": username}):
+#                 flash('Username is already taken.', 'danger')
+#             else:
+#                 # Hash password and insert user into MongoDB
+#                 hashed_password = generate_password_hash(password)
+#                 db.users.insert_one({
+#                     "full_name": full_name,
+#                     "username": username,
+#                     "email": email,
+#                     "password_hash": hashed_password,
+#                     "phone_no": phone_no,
+#                     "role": "user",  # Default role
+#                     "status": "active"
+#                 })
+#                 flash('Account created successfully! Please log in.', 'success')
+#                 return redirect(url_for('auth.login'))
+#     return render_template('signup.html')
+
+
+# @auth.route('/logout', methods=['GET', 'POST'])
+# @login_required
+# def logout():
+#     if request.method == 'POST':
+#         logout_user()
+#         return redirect(url_for('auth.login'))  # Redirect to login page after logout
+#     return redirect(url_for('auth.login'))
+
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required
 import re
+from bson import ObjectId
 from .models import User
 
 auth = Blueprint('auth', __name__)
@@ -10,7 +126,7 @@ auth = Blueprint('auth', __name__)
 # Regular expressions for validation
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#_]{8,}$'  # At least 8 characters, 1 letter, and 1 number
-PHONE_REGEX = r'^\+?[0-9]{10,15}$'  # International format or 10-15 digits
+PHONE_REGEX = r'^\+?[0-9]{10,15}$'
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -22,20 +138,36 @@ def login():
             flash('Please provide both identifier and password.', 'danger')
             return redirect(url_for('auth.login'))
 
-        user = User.get_user_by_username_or_phone(identifier)
-        if user and check_password_hash(user.password_hash, password):
-            login_user(user)
-            user_role = user.role
-            print(f"User Role: {user_role}") 
+        # Access MongoDB
+        try:
+            db = current_app.config['DB_CONNECTION']
+            user = db.users.find_one({
+                "$or": [
+                    {"username": identifier},
+                    {"email": identifier},
+                    {"phone_no": identifier}
+                ]
+            })
+        except Exception as e:
+            flash('Database error. Please try again later.', 'danger')
+            return redirect(url_for('auth.login'))
+
+        if user and check_password_hash(user['password_hash'], password):
+            user_obj = User(
+                id=str(user['_id']),
+                username=user['username'],
+                email=user['email'],
+                phone_no=user.get('phone_no'),
+                role=user.get('role', 'user')
+            )
+            login_user(user_obj)
 
             # Redirect based on role if necessary
-            if user_role == 'admin':
-                return redirect(url_for('dashboard.admin_dashboard'))  # Example admin route
-            elif user_role == 'user':
-                return redirect(url_for('dashboard.dashboard'))
-
-            # flash('Login successful!', 'success')
-            return redirect(url_for('dashboard.dashboard'))
+            role_redirects = {
+                'admin': 'dashboard.admin_dashboard',
+                'user': 'dashboard.dashboard'
+            }
+            return redirect(url_for(role_redirects.get(user_obj.role, 'dashboard.dashboard')))
         else:
             flash('Invalid credentials, please try again.', 'danger')
             return redirect(url_for('auth.login'))
@@ -51,24 +183,35 @@ def signup():
         phone_no = request.form['phone_no']
 
         if not re.match(EMAIL_REGEX, email):
-            flash('Invalid email format.')
+            flash('Invalid email format.', 'danger')
         elif not re.match(PASSWORD_REGEX, password):
-            flash('Password must be at least 8 characters long and contain at least one letter and one number.')
+            flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
         elif not re.match(PHONE_REGEX, phone_no):
-            flash('Invalid phone number.')
-        elif User.get_user_by_email(email):
-            flash('Email is already registered.')
+            flash('Invalid phone number.', 'danger')
         else:
-            User.create_user(full_name, username, email, password, phone_no)
-            flash('Account created successfully! Please log in.')
-            return redirect(url_for('auth.login'))
+            db = current_app.config['DB_CONNECTION']
+            if db.users.find_one({"email": email}):
+                flash('Email is already registered.', 'danger')
+            elif db.users.find_one({"username": username}):
+                flash('Username is already taken.', 'danger')
+            else:
+                hashed_password = generate_password_hash(password)
+                db.users.insert_one({
+                    "full_name": full_name,
+                    "username": username,
+                    "email": email,
+                    "password_hash": hashed_password,
+                    "phone_no": phone_no,
+                    "role": "user",
+                    "status": "active"
+                })
+                flash('Account created successfully! Please log in.', 'success')
+                return redirect(url_for('auth.login'))
     return render_template('signup.html')
 
-@auth.route('/logout', methods=['GET', 'POST'])
+@auth.route('/logout')
 @login_required
 def logout():
-    if request.method == 'POST':
-        logout_user()
-        return redirect(url_for('auth.login'))  # Redirect to login page after logout
-    return redirect(url_for('auth.login')) 
-
+    logout_user()
+    flash('You have successfully logged out.', 'success')
+    return redirect(url_for('auth.login'))

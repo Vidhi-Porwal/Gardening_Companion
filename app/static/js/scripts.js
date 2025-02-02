@@ -72,6 +72,25 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+// select garden dropdown
+document.getElementById('gardenSelector').addEventListener('change', function () {
+    const selectedGarden = this.value;
+    document.querySelectorAll('.col-md-4').forEach(plantCard => {
+        const gardenId = plantCard.dataset.gardenId;
+        plantCard.style.display = (selectedGarden === 'all' || gardenId === selectedGarden) ? '' : 'none';
+    });
+});
+
+//add garden
+function handleGardenSelection(select) {
+    if (select.value === "add") {
+        // Show the "Add Garden" modal
+        new bootstrap.Modal(document.getElementById('addGardenModal')).show();
+        select.value = "default"; // Reset dropdown selection after showing modal
+    }
+}
+
+
 // profile
     function toggleEdit() {
         const fields = document.querySelectorAll('.profile-details input');
