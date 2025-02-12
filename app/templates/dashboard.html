@@ -4,17 +4,37 @@
 
 {% block content %}
 <section class="container my-5">
+
     <!-- Dashboard Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div>
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </br>
+                    </div>
+                {% endif %}
+            {% endwith %}
         <h2>Your Plants</h2>
+            {% if user_role == "admin" %}
+        <form action="{{ url_for('dashboard.admin_dashboard') }}" method="POST">
+            <button type="submit" class="btn btn-primary">Admin Panel</button>
+        </form>
+            {% endif %}
 
         <!-- Garden Selection Dropdown -->
         <div class="garden-dropdown">
             <label for="gardenSelector" class="me-2">Select Garden:</label>
             <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
                 <option value="default">My Garden (Default)</option>
-                {% for garden in gardens %}
-                    <option value="{{ garden.id }}">{{ garden.name }}</option>
+                {% for garden in user_garden %}
+                    <option value="{{ garden['_id'] }}">{{ garden['gardenName'] }}</option>
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
@@ -41,33 +61,34 @@
             </div>
         </div>
     </div>    
+    
     <!-- Display User Plants -->
     <div class="row g-4">
         {% for plant in user_plants %}
         <div class="col-md-4">
             <div class="card shadow-sm plant-card">
-                <img src="{{ plant.ImageURL if plant.ImageURL else url_for('static', filename='images/default_plant.jpg') }}" 
+                
+                <img src="{{ plant.imageURL if plant.imageURL  }}" 
                      class="card-img-top" 
                      alt=""
-                     data-id="{{ plant.plant_id }}" 
+                     data-id="{{ plant._id }}" 
                      data-name="{{ plant.commonName }}" 
-                     data-scientific-name="{{ plant.ScientificName if plant.ScientificName else '--'}}" 
-                     data-year="{{ plant.Year if plant.Year else '--'}}" 
-                     data-author="{{ plant.Author if plant.Author else '--' }}" 
-                     data-status="{{ plant.Status if plant.Status else '--'}}" 
-                     data-rank="{{ plant.Rank if plant.Rank else '--'}}" 
-                     data-family="{{ plant.FamilyCommonName if plant.FamilyCommonName else '--'}}" 
-                     data-genus="{{ plant.Genus if plant.Genus else '--' }}" 
-                     data-edible="{{ 'Yes' if plant.Edible else 'No' }}" 
-                     data-sapling-description="{{ plant.SaplingDescription }}" 
-                     data-plant-description="{{ plant.PlantDescription }}" 
-                     data-image-url="{{ plant.ImageURL if plant.ImageURL else url_for('static', filename='images/default_plant.jpg') }}">
+                     data-scientific-name="{{ plant.scientificName }}" 
+                      
+                     data-rank="{{ plant.rank }}" 
+                     data-family="{{ plant.familyCommonName }}" 
+                     data-genus="{{ plant.genus }}" 
+                     data-edible="{{ 'Yes' if plant.edible else 'No' }}" 
+                     data-sapling-description="{{ plant.saplingDescription }}" 
+                      
+                     data-image-url="{{ plant.imageURL if plant.imageURL else url_for('static', filename='images/default_plant.jpg') }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ plant.commonName }}</h5>
-                    <!-- <p class="card-text"><i class="fa-solid fa-box"></i> Quantity: {{ plant.quantity }} </p> -->
+                    <!-- <p class="card-text"><i class="fa-solid fa-box"></i> Quantity: {{plant.imageURL}}</p> -->
                     <p class="card-text"><i class="fa-solid fa-water"></i> Watering Schedule: {{ plant.watering if plant.watering else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing Schedule: {{ plant.fertilizing if plant.fertilizing else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing type: {{ plant.fertilizer_type if plant.fertilizer_type else 'N/A' }} </p>
+                    <!-- <p class="card-text"><i class="fa-solid fa-seedling"></i> Sunlight {{ plant.sunlight if plant.sunlight else 'N/A' }} </p> -->
                     <p class="card-text"><i class="fa-solid fa-seedling"></i>Sunlight: 
                         {% if plant.sunlight == 1 %}
                             Full Sunlight
@@ -83,7 +104,7 @@
             </div>
         </div>
         {% endfor %}
-
+    </div>
     
     <button id="add-plant-btn" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addPlantModal">Add New Plant</button>
 </section>
@@ -101,17 +122,15 @@
             </div>
             <div class="modal-body">
                 <img id="plantImage" src="" alt="" class="img-fluid mb-3">
-                <h3 id="plantName"></h3>
+                <h5 id="plantName"></h5>
                 <p><strong>Scientific Name:</strong> <span id="plantScientificName"> </span></p>
-                <p><strong>Year:</strong> <span id="plantYear"></span></p>
-                <p><strong>Author:</strong> <span id="plantAuthor"></span></p>
-                <p><strong>Status:</strong> <span id="plantStatus"></span></p>
+                
                 <p><strong>Rank:</strong> <span id="plantRank"></span></p>
-                <p><strong>Family Common Name:</strong> <span id="plantFamily"></span></p>
+                <p><strong>Family Common Name:</strong> <span id="plantFamily"> " </span></p>
                 <p><strong>Genus:</strong> <span id="plantGenus"></span></p>
                 <p><strong>Edible:</strong> <span id="plantEdible"></span></p>
                 <p><strong>Sapling Description:</strong> <span id="plantSaplingDescription"> </span></p>
-                <p><strong>Plant Description:</strong> <span id="plantPlantDescription"></span></p>
+                
 
                 <!-- Remove Plant Button inside Modal -->
                 <form method="POST" action="{{ url_for('dashboard.dashboard') }}">
@@ -139,7 +158,8 @@
                         <select id="plant_id" class="form-control" name="plant_id" required>
                             <option value="" disabled selected>Select a plant</option>
                             {% for plant in plants %}
-                                <option value="{{ plant.ID }}">{{ plant.commonName }}</option>
+                                <option value="{{ plant._id}}" name="">{{ plant.commonName }}</option>
+                                
                             {% endfor %}
                         </select>
                     </div>
@@ -231,3 +251,4 @@
 </div>
 
 {% endblock %}
+

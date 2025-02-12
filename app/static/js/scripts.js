@@ -27,50 +27,42 @@ window.addEventListener('DOMContentLoaded', () => {
         scrollPos = currentTop;
     });
 })
-
 // dashboard modal
     document.addEventListener('DOMContentLoaded', () => {
-        const plantImages = document.querySelectorAll('.card-img-top');
-        const plantDetailsModal = document.getElementById('plantDetailsModal');
+const plantDetailsModal = document.getElementById('plantDetailsModal');
 
-        plantImages.forEach(image => {
-            image.addEventListener('click', () => {
-                // Fetch data attributes
-                const plantId = image.dataset.id;
-                const plantName = image.dataset.name;
-                const plantScientificName = image.dataset.scientificName;
-                const plantYear = image.dataset.year;
-                const plantAuthor = image.dataset.author;
-                const plantStatus = image.dataset.status;
-                const plantRank = image.dataset.rank;
-                const plantFamily = image.dataset.family;
-                const plantGenus = image.dataset.genus;
-                const plantEdible = image.dataset.edible;
-                const plantSaplingDescription = image.dataset.saplingDescription;
-                const plantPlantDescription = image.dataset.plantDescription;
-                const plantImageUrl = image.dataset.imageUrl;
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('plant-card-image')) {
+        const image = event.target;
 
-                // Populate modal content
-                document.getElementById('plantImage').src = plantImageUrl;
-                document.getElementById('plantName').textContent = plantName;
-                document.getElementById('plantScientificName').textContent = plantScientificName;
-                document.getElementById('plantYear').textContent = plantYear;
-                document.getElementById('plantAuthor').textContent = plantAuthor;
-                document.getElementById('plantStatus').textContent = plantStatus;
-                document.getElementById('plantRank').textContent = plantRank;
-                document.getElementById('plantFamily').textContent = plantFamily;
-                document.getElementById('plantGenus').textContent = plantGenus;
-                document.getElementById('plantEdible').textContent = plantEdible;
-                document.getElementById('plantSaplingDescription').textContent = plantSaplingDescription;
-                document.getElementById('plantPlantDescription').textContent = plantPlantDescription;
-                document.getElementById('modalPlantId').value = plantId;
+        // Fetch data attributes
+        const plantId = image.dataset.id;
+        const plantName = image.dataset.name;
+        const plantScientificName = image.dataset.scientificName;
+        const plantRank = image.dataset.rank;
+        const plantFamily = image.dataset.family;
+        const plantGenus = image.dataset.genus;
+        const plantEdible = image.dataset.edible;
+        const plantSaplingDescription = image.dataset.saplingDescription;
+        const plantImageUrl = image.dataset.imageUrl;
 
-                // Show modal
-                const bootstrapModal = new bootstrap.Modal(plantDetailsModal);
-                bootstrapModal.show();
-            });
-        });
-    });
+        // Populate modal content
+        document.getElementById('plantImage').src = plantImageUrl;
+        document.getElementById('plantName').textContent = plantName;
+        document.getElementById('plantScientificName').textContent = plantScientificName;
+        document.getElementById('plantRank').textContent = plantRank;
+        document.getElementById('plantFamily').textContent = plantFamily;
+        document.getElementById('plantGenus').textContent = plantGenus;
+        document.getElementById('plantEdible').textContent = plantEdible;
+        document.getElementById('plantSaplingDescription').textContent = plantSaplingDescription;
+
+        // Show the modal
+        const bootstrapModal = new bootstrap.Modal(plantDetailsModal);
+        bootstrapModal.show();
+    }
+});
+});
+
 
 // select garden dropdown
 document.getElementById('gardenSelector').addEventListener('change', function () {
