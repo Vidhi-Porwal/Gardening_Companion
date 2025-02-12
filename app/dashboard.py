@@ -60,7 +60,9 @@ def dashboard():
         # Fetch user's plants and all available plants
         user_plants = list(db.garden_plant.find({"user_id": current_user.id}))
         user_plants_data = list(db.garden_plant.find({"user_id": current_user.id}, {"plant_id": 1, "_id": 0}))
-        user_garden = list(db.garden.find({"user_id": current_user.id}, {"gardenName": 1}))
+        user_garden = list(db.garden.find({"user_id": ObjectId(current_user.id)}, {"name": 1}))
+        # user_garden = list(db.garden.find({"user_id": ObjectId(current_user.id)}))
+        print(user_garden, '000000000', current_user.id)
         # Extract plant IDs into a list
         plant_ids = [entry["plant_id"] for entry in user_plants_data]
 

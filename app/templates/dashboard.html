@@ -34,7 +34,7 @@
             <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
                 <option value="default">My Garden (Default)</option>
                 {% for garden in user_garden %}
-                    <option value="{{ garden['_id'] }}">{{ garden['gardenName'] }}</option>
+                    <option value="{{ garden['_id'] }}">{{ garden['name'] }}</option>
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
