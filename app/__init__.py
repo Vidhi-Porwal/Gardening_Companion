@@ -116,7 +116,7 @@ def create_app():
         db = mongo_client[app.config['MONGO_DB_NAME']]
         app.config['DB_CONNECTION'] = db
     except pymongo.errors.PyMongoError as e:
-        print(f"Error connecting to MongoDB: {e}")
+        print(f"Error connecting to MongoDB: {e}")x
         raise
 
     # Initialize Flask extensions
