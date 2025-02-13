@@ -74,7 +74,12 @@ from flask_login import LoginManager
 import pymongo
 import os
 from bson import ObjectId
+from dotenv import load_dotenv
 from .models import User
+from flask_dance.contrib.google import make_google_blueprint
+
+# Load environment variables
+load_dotenv()
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -111,7 +116,7 @@ def create_app():
         db = mongo_client[app.config['MONGO_DB_NAME']]
         app.config['DB_CONNECTION'] = db
     except pymongo.errors.PyMongoError as e:
-        print(f"Error connecting to MongoDB: {e}")
+        print(f"Error connecting to MongoDB: {e}")x
         raise
 
     # Initialize Flask extensions
@@ -121,8 +126,10 @@ def create_app():
     from .routes import main
     app.register_blueprint(main)
 
-    from .auth import auth
+    from .auth import auth, google_blueprint  # Import google_blueprint
     app.register_blueprint(auth, url_prefix='/auth')
+    app.register_blueprint(google_blueprint, url_prefix='/login')  # Register OAuth Google Login
+
 
     from .dashboard import dashboard_bp
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
