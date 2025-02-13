@@ -29,16 +29,28 @@
             {% endif %}
 
         <!-- Garden Selection Dropdown -->
-        <div class="garden-dropdown">
+        <!-- <div class="garden-dropdown">
             <label for="gardenSelector" class="me-2">Select Garden:</label>
             <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
-                <option value="default">My Garden (Default)</option>
                 {% for garden in user_garden %}
-                    <option value="{{ garden['_id'] }}">{{ garden['name'] }}</option>
+                    <option value="{{ garden['_id'] }}">{{ garden['gardenName'] }}</option>
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
-        </div>
+        </div> -->
+        <form method="POST" action="{{ url_for('dashboard.dashboard') }}" class="garden-dropdown">
+            <label for="gardenSelector" class="me-2">Select Garden:</label>
+            <select id="gardenSelector" name="garden_id" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                {% for garden in user_garden %}
+                    <option value="{{ garden['_id'] }}" {% if garden['_id'] == selected_garden %}selected{% endif %}>
+                        {{ garden['gardenName'] }}
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="select_garden" value="1">
+        </form>
+
+
 
         <!-- Modal for Adding a New Garden -->
         <div id="addGardenModal" class="modal fade" tabindex="-1">
@@ -155,6 +167,7 @@
                 <form method="POST" action="{{ url_for('dashboard.dashboard') }}">
                     <div class="mb-3">
                         <label for="plant_id" class="form-label">Select Plant:</label>
+                        <input type="hidden" name="garden_id" value="{{ selected_garden }}">
                         <select id="plant_id" class="form-control" name="plant_id" required>
                             <option value="" disabled selected>Select a plant</option>
                             {% for plant in plants %}
