@@ -1,3 +1,7 @@
 
 palak/
 .env
+.*
+venv
+/venv
+venv/
