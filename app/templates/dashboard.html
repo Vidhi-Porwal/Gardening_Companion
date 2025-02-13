@@ -22,46 +22,8 @@
                 {% endif %}
             {% endwith %}
         <h2>Your Plants</h2>
-            {% if user_role == "admin" %}
-        <form action="{{ url_for('dashboard.admin_dashboard') }}" method="POST">
-            <button type="submit" class="btn btn-primary">Admin Panel</button>
-        </form>
-            {% endif %}
+    </div>
 
-        <!-- Garden Selection Dropdown -->
-        <div class="garden-dropdown">
-            <label for="gardenSelector" class="me-2">Select Garden:</label>
-            <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
-                <option value="default">My Garden (Default)</option>
-                {% for garden in user_garden %}
-                    <option value="{{ garden['_id'] }}">{{ garden['gardenName'] }}</option>
-                {% endfor %}
-                <option value="add">+ Add New Garden</option>
-            </select>
-        </div>
-
-        <!-- Modal for Adding a New Garden -->
-        <div id="addGardenModal" class="modal fade" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add New Garden</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="{{ url_for('dashboard.add_garden') }}">
-                            <div class="mb-3">
-                                <label for="newGardenName" class="form-label">Garden Name:</label>
-                                <input type="text" id="newGardenName" name="garden_name" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Add Garden</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>    
-    
     <!-- Display User Plants -->
     <div class="row g-4">
         {% for plant in user_plants %}

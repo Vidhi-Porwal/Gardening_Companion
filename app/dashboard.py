@@ -8,15 +8,52 @@ from .models import User
 from datetime import datetime
 from flask import render_template, request, jsonify
 from pymongo import MongoClient
-
-
-# Initialize blueprint
 dashboard_bp = Blueprint('dashboard', __name__)
 
 # Configure the Gemini API
+api_key = os.getenv("GENAI_API_KEY", "")
 
 api_key = os.getenv("GENAI_API_KEY", "AIzaSyAgiXHaX1IuWDErnEwfXdYRWMGhKUCehs0")  # Use environment variable for API key
 genai.configure(api_key=api_key)
+import requests
+import requests
+
+# 🔹 Nginx Proxy URL jo Gemini API ko route karega
+GEMINI_PROXY_URL = "https://54.174.173.198/gemini_proxy/models/gemini-pro:generateText?key=AIzaSyAgiXHaX1IuWDErnEwfXdYRWMGhKUCehs0"
+
+def call_gemini_proxy(prompt):
+    print("coming inside clll ge")
+    try:
+        payload = {
+            "prompt": {"text": prompt}
+        }
+        headers = {"Content-Type": "application/json"}
+        print("headers are ", headers)
+        response = requests.post(GEMINI_PROXY_URL, json=payload, headers=headers)
+        print("any response", response)
+        
+        if response.status_code == 200:
+            return response.json().get("response", "No response from Gemini")
+        else:
+            return f"Error: {response.text}"
+    
+    except Exception as e:
+        print("call exception")
+        return f"Request failed: {str(e)}"
+
+
+# def call_gemini_proxy(prompt):
+#     try:
+#         payload = {"prompt": prompt}
+#         headers = {"Content-Type": "application/json"}
+#         response = requests.post(GEMINI_PROXY_URL, json=payload, headers=headers)
+#         if response.status_code == 200:
+#             return response.json().get("response", "No response from Gemini")
+#         else:
+#             return f"Error: {response.text}"
+#     except Exception as e:
+#         return f"Request failed: {str(e)}"
+
 
 # Utility: Role-based access decorator
 def role_required(role):
@@ -31,27 +68,17 @@ def role_required(role):
             if not current_user.is_authenticated:
                 flash("You need to log in to access this page.", "error")
                 return redirect(url_for("auth.login"))
-            if current_user.role != role:
-                flash("You do not have permission to access this page.", "error")
-                return redirect(url_for("auth.login"))
+            # if current_user.role != role:
+            #     flash("You do not have permission to access this page.", "error")
+            #     return redirect(url_for("main.index"))
             return func(*args, **kwargs)
         return wrapper
     return decorator
 
-
-def ensure_default_garden(user_id):
-    default_garden = db.gardens.find_one({"user_id": ObjectId(user_id), "name": "My Garden"})
-    if not default_garden:
-        db.gardens.insert_one({
-            "name": "My Garden",
-            "user_id": ObjectId(user_id)
-        })
-
-
 # Dashboard Route
 @dashboard_bp.route('/', methods=['GET', 'POST'])
 @login_required
-# @role_required('user')
+@role_required('user')
 def dashboard():
     try:
         # Access the MongoDB database
@@ -78,11 +105,9 @@ def dashboard():
         # Handle POST requests
         if request.method == 'POST':
             # Add a plant to the user's garden
+            # Add a plant to the user's garden
             if 'add_plant' in request.form:
                 plant_id = request.form.get('plant_id')
-                print("plant_id", plant_id)
-                plant_id = ObjectId(plant_id)
-
                 if plant_id:
                     try:
                         # Fetch plant information from the database
@@ -115,8 +140,9 @@ def dashboard():
                                     "1 for full sunlight, 2 for partial sunlight, 3 for no sunlight. "
                                     "Also give me the type of fertilizer recommended. in watering and fertilizing also only give a number in output not a interval")
                             
-                            response = model.generate_content(prompt)
-                            gemini_response = response.text
+                            # response = model.generate_content(prompt)
+                            # gemini_response = response.text
+                            gemini_response = call_gemini_proxy(prompt)
                             print("Gemini Response:", gemini_response)
 
                             # Parse and store the response

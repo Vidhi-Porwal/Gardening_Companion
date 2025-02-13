@@ -17,9 +17,9 @@ def get_db_collection(collection_name):
 
 # User Model
 class User(UserMixin):
-
-    def __init__(self, id, username, email, phone_no=None, role='user'):
+    def __init__(self, id, full_name, username, email, password_hash, phone_no, status, **kwargs):
         self.id = id
+        self.full_name = full_name
         self.username = username
         self.email = email
         self.phone_no = phone_no
@@ -152,6 +152,10 @@ class UserPlant:
         results = collection.find({"user_id": user_id})
         return list(results)
 
+        collection = get_db_collection("user_plants")
+        results = collection.find({"user_id": user_id})
+        return list(results)
+
     @staticmethod
     def add_plant_to_user(user_id, plant_id, watering, fertilizing, sunlight, fertilizer_type, quantity):
         collection = get_db_collection("user_plants")
@@ -170,7 +174,27 @@ class UserPlant:
             logging.error(f"Error adding plant to user: {e}")
 
     @staticmethod
+        collection = get_db_collection("user_plants")
+        try:
+            collection.update_one(
+                {"user_id": user_id, "plant_id": plant_id},
+                {"$set": {
+                    "watering": watering,
+                    "fertilizing": fertilizing,
+                    "sunlight": sunlight,
+                    "fertilizer_type": fertilizer_type,
+                }, "$inc": {"quantity": quantity}},
+                upsert=True
+            )
+        except Exception as e:
+            logging.error(f"Error adding plant to user: {e}")
+
+    @staticmethod
     def get_common_name(plant_id):
+        collection = get_db_collection("plants")
+        result = collection.find_one({"_id": plant_id}, {"CommonName": 1})
+        return result.get("CommonName") if result else None
+
         collection = get_db_collection("plants")
         result = collection.find_one({"_id": plant_id}, {"CommonName": 1})
         return result.get("CommonName") if result else None
@@ -194,7 +218,13 @@ class PlantInfo:
         return list(results)
 
     @staticmethod
-    def get_plant_by_id(plant_id):
-        collection = get_db_collection("plants")
-        result = collection.find_one({"_id": plant_id})
-        return result
+    def get_plant_by_id():
+        with get_db_connection() as connection:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT * FROM PlantInfo WHERE ID = %s")
+                    result = cursor.fetchone()
+                    return result
+            except Exception as e:
+                logging.error(f"Error fetching plants: {e}")
+                return []

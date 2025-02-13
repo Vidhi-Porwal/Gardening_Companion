@@ -72,10 +72,14 @@
 from flask import Flask, current_app
 from flask_login import LoginManager
 import pymongo
+import pymongo
 import os
 from bson import ObjectId
 from .models import User
+from bson import ObjectId
+from .models import User
 
+# Initialize Flask-Login
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
@@ -93,8 +97,22 @@ def load_user(user_id):
             role=user.get('role', 'user')
         )
     return None
+    db = current_app.config['DB_CONNECTION']
+    user = db.users.find_one({"_id": ObjectId(user_id)})
+    if user:
+        return User(
+            id=str(user['_id']),
+            username=user['username'],
+            email=user['email'],
+            phone_no=user.get('phone_no'),
+            role=user.get('role', 'user')
+        )
+    return None
 
 def create_app():
+    """
+    Application Factory: Creates and configures the Flask app.
+    """
     """
     Application Factory: Creates and configures the Flask app.
     """
@@ -104,7 +122,19 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'DEV')
     app.config['MONGO_URI'] = os.getenv('MONGO_URI', 'mongodb://3.86.209.148:27017')
     app.config['MONGO_DB_NAME'] = os.getenv('MONGO_DB_NAME', 'Gardening_Companion')
+    app.config['MONGO_URI'] = os.getenv('MONGO_URI', 'mongodb://3.86.209.148:27017')
+    app.config['MONGO_DB_NAME'] = os.getenv('MONGO_DB_NAME', 'Gardening_Companion')
 
+    # Set up MongoDB connection
+    try:
+        mongo_client = pymongo.MongoClient(app.config['MONGO_URI'])
+        db = mongo_client[app.config['MONGO_DB_NAME']]
+        app.config['DB_CONNECTION'] = db
+    except pymongo.errors.PyMongoError as e:
+        print(f"Error connecting to MongoDB: {e}")
+        raise
+
+    # Initialize Flask extensions
     # Set up MongoDB connection
     try:
         mongo_client = pymongo.MongoClient(app.config['MONGO_URI'])

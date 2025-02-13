@@ -24,21 +24,48 @@ CREATE TABLE IF NOT EXISTS PlantInfo (
     ImageURL TEXT,
     Edible TINYINT(1),
     SaplingDescription TEXT,
-    PlantDescription TEXT
+    
+    
 );
 
-CREATE TABLE UserPlant (
+CREATE TABLE Garden (
+    garden_id INT,
     user_id INT,
     plant_id INT,
     quantity INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    watering INT,
-    fertilizing INT,
-    sunlight INT,
-    fertilizer_type varchar(255)
+    
 
-    PRIMARY KEY (user_id, plant_id),
+    PRIMARY KEY (garden_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (plant_id) REFERENCES PlantInfo(ID) ON DELETE CASCADE
 );
 
+watering INT,
+    fertilizing INT,
+    sunlight INT,
+    fertilizer_type varchar(255)
+CREATE TABLE GardenPlant (
+    garden_id INT,
+    user_id INT,
+    plant_id INT,
+    quantity INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+
+    PRIMARY KEY (garden_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (plant_id) REFERENCES PlantInfo(ID) ON DELETE CASCADE
+);
+CREATE TABLE Garden (
+    garden_id INT,
+    user_id INT,
+    plant_id INT,
+    quantity INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+
+    PRIMARY KEY (garden_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (plant_id) REFERENCES PlantInfo(ID) ON DELETE CASCADE
+);

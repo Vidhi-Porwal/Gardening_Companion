@@ -107,6 +107,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required
 import re
+from bson import ObjectId
 from .models import User
 
 auth = Blueprint('auth', __name__)
@@ -161,9 +162,12 @@ def signup():
 
         if not re.match(EMAIL_REGEX, email):
             flash('Invalid email format.', 'danger')
+            flash('Invalid email format.', 'danger')
         elif not re.match(PASSWORD_REGEX, password):
             flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
+            flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
         elif not re.match(PHONE_REGEX, phone_no):
+            flash('Invalid phone number.', 'danger')
             flash('Invalid phone number.', 'danger')
         else:
             db = current_app.config['DB_CONNECTION']
