@@ -69,7 +69,7 @@ def dashboard():
         plants = list(db.plants.find())
 
         user = db.users.find_one({"_id": ObjectId(current_user.id)}, {"role": 1, "_id": 0})
-        print(user["role"])
+        # print(user["role"])
         user_role=user["role"]
        
 
@@ -171,7 +171,7 @@ def dashboard():
 
         # Render the dashboard template
         return render_template('dashboard.html', user_plants=user_plants, user_plants_data=user_plants_data, plants=plants, gemini_response=gemini_response,  chatbot_open=chat_session.is_open,  # Updated to use chat_session
-            chat_history=chat_session.chat_history,user_role=user_role, user_garden=user_garden )
+            chat_history=chat_session.chat_history, user_garden=user_garden,user_role=user_role)
 
     except Exception as e:
         print(f"Error in dashboard: {e}")
