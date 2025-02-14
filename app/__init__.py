@@ -77,7 +77,7 @@ from bson import ObjectId
 from dotenv import load_dotenv
 from .models import User
 from flask_dance.contrib.google import make_google_blueprint
-
+from urllib.parse import quote_plus
 # Load environment variables
 load_dotenv()
 
@@ -98,17 +98,30 @@ def load_user(user_id):
             role=user.get('role', 'user')
         )
     return None
-
+from dotenv import load_dotenv
+load_dotenv()
 def create_app():
     """
     Application Factory: Creates and configures the Flask app.
     """
     app = Flask(__name__)
+    MONGO_USER = os.getenv("MONGO_USER")
+    MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
+    MONGO_USER = quote_plus(MONGO_USER) if MONGO_USER else ""
+    MONGO_PASSWORD = quote_plus(MONGO_PASSWORD) if MONGO_PASSWORD else ""
+    MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
+    MONGO_PORT = os.getenv("MONGO_PORT", "27017")
+    MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
+    MONGO_AUTH_SOURCE = os.getenv("MONGO_AUTH_SOURCE", "admin")
+    
+    # Create the final MongoDB URI
+    MONGO_URI = f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/{MONGO_DB_NAME}?authSource={MONGO_AUTH_SOURCE}"
+
 
     # Load configurations
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'DEV')
-    app.config['MONGO_URI'] = os.getenv('MONGO_URI', 'mongodb://3.86.209.148:27017')
-    app.config['MONGO_DB_NAME'] = os.getenv('MONGO_DB_NAME', 'Gardening_Companion')
+    app.config['MONGO_URI'] = MONGO_URI
+    app.config['MONGO_DB_NAME'] = os.getenv('MONGO_DB_NAME')
 
     # Set up MongoDB connection
     try:
