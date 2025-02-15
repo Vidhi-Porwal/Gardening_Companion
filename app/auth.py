@@ -112,13 +112,19 @@ from flask_dance.consumer.oauth2 import OAuth2ConsumerBlueprint
 from flask_dance.consumer import oauth_error
 from authlib.integrations.flask_client import OAuthError  
 from .models import User  
- 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from datetime import datetime  
 import pymongo
 from flask_login import current_user
 
 import re
 from .models import User
+from flask_mail import Message
+from . import mail
+
+from .utils import generate_reset_token,verify_reset_token
+
 
 
 
@@ -343,6 +349,7 @@ def update_phone():
     return render_template("update_phone.html")
 
 
+
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -404,6 +411,63 @@ def signup():
                 return redirect(url_for('auth.login'))
     return render_template('signup.html')
 
+
+
+@auth.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form["email"].strip().lower()
+        db = current_app.config['DB_CONNECTION']
+        user = db.users.find_one({"email": email})
+        if user:
+            token = generate_reset_token(email)
+            reset_link = url_for("auth.reset_password", token=token, _external=True)
+
+            msg = Message("Password Reset Request", sender="your_email@gmail.com", recipients=[email])
+            msg.body = f"Click the link to reset your password: {reset_link}"
+
+            msg.html = f"""
+                <p>Click the link below to reset your password:</p>
+                <p><a href="{reset_link}" target="_blank"><strong>Reset Password</strong></a></p>
+                <p>If you did not request this, please ignore this email.</p>
+            """
+            try:
+                mail.send(msg)
+                flash("A password reset link has been sent to your email.", "info")
+                print(f" Reset Email Sent: {reset_link}")  # Debugging
+            except Exception as e:
+                print(f" Error sending email: {e}")  # Debugging
+                flash("Error sending email. Try again later.", "danger")
+        else:
+            flash("Email not found.", "danger")
+
+    return render_template("forgot_password.html")
+
+@auth.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    db = current_app.config['DB_CONNECTION']
+    email = verify_reset_token(token)  # Ensure the token is valid
+
+    if not email:
+        flash("Invalid or expired token.", "danger")
+        return redirect(url_for("auth.forgot_password"))
+
+    if request.method == "POST":
+        new_password = request.form["password"]
+
+        if len(new_password) < 8:
+            flash("Password must be at least 8 characters long.", "danger")
+            return redirect(url_for("auth.reset_password", token=token))
+
+        hashed_password = generate_password_hash(new_password)  
+
+        db.users.update_one({"email": email}, {"$set": {"password_hash": hashed_password}})  
+
+        flash("Your password has been updated! Please log in.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("reset_password.html")
+    
 @auth.route('/logout')
 @login_required
 def logout():
