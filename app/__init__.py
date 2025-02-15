@@ -78,12 +78,15 @@ from dotenv import load_dotenv
 from .models import User
 from flask_dance.contrib.google import make_google_blueprint
 from urllib.parse import quote_plus
+from flask_mail import Mail
+
 # Load environment variables
 load_dotenv()
 
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
+mail = Mail()  # Initialize mail here, but configure it inside create_app
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -98,8 +101,7 @@ def load_user(user_id):
             role=user.get('role', 'user')
         )
     return None
-from dotenv import load_dotenv
-load_dotenv()
+
 def create_app():
     """
     Application Factory: Creates and configures the Flask app.
@@ -123,6 +125,14 @@ def create_app():
     app.config['MONGO_URI'] = MONGO_URI
     app.config['MONGO_DB_NAME'] = os.getenv('MONGO_DB_NAME')
 
+    # Email Configuration
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
+    app.config['MAIL_PORT'] = 587  # Use port 587 for TLS
+    app.config['MAIL_USE_TLS'] = True  
+    app.config['MAIL_USE_SSL'] = False  # Don't use SSL since TLS is enabled
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
     # Set up MongoDB connection
     try:
         mongo_client = pymongo.MongoClient(app.config['MONGO_URI'])
@@ -134,6 +144,8 @@ def create_app():
 
     # Initialize Flask extensions
     login_manager.init_app(app)
+    mail.init_app(app)  # Initialize Flask-Mail
+
 
     # Register blueprints
     from .routes import main
