@@ -29,7 +29,7 @@
             {% endif %}
 
         <!-- Garden Selection Dropdown -->
-        <!-- <div class="garden-dropdown">
+         <!-- <div class="garden-dropdown">
             <label for="gardenSelector" class="me-2">Select Garden:</label>
             <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
                 {% for garden in user_garden %}
@@ -37,7 +37,7 @@
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
-        </div> -->
+        </div>  -->
         <form method="POST" action="{{ url_for('dashboard.dashboard') }}" class="garden-dropdown">
             <label for="gardenSelector" class="me-2">Select Garden:</label>
             <select id="gardenSelector" name="garden_id" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
@@ -46,10 +46,11 @@
                         {{ garden['gardenName'] }}
                     </option>
                 {% endfor %}
+                <option value="add">+ Add New Garden</option>
             </select>
-            <input type="hidden" name="select_garden" value="1">
+            <!-- <input type="hidden" name="select_garden" value="1"> -->
         </form>
-
+ 
 
 
         <!-- Modal for Adding a New Garden -->

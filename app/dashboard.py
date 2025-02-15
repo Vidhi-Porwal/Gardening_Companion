@@ -87,7 +87,9 @@ def dashboard():
             # When the user selects a different garden
             if 'select_garden' in request.form:
                 garden_id = request.form.get('garden_id')
+                print (garden_id)
                 return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
+
 
             # Add a plant to the selected garden
             if 'add_plant' in request.form:
