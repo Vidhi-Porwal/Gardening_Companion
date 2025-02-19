@@ -83,6 +83,18 @@ function handleGardenSelection(select) {
 }
 
 
+document.getElementById("gardenSelector").addEventListener("change", function() {
+    if (this.value === "add") {
+        var addGardenModal = new bootstrap.Modal(document.getElementById("addGardenModal"));
+        addGardenModal.show();
+        this.value = ""; // Reset dropdown after opening modal
+    } else {
+        document.getElementById("gardenForm").submit(); // Submit form for normal selections
+    }
+});
+
+
+
 // profile
     function toggleEdit() {
         const fields = document.querySelectorAll('.profile-details input');
