@@ -69,6 +69,68 @@
 #     return app
 
 
+# from flask import Flask, current_app
+# from flask_login import LoginManager
+# import pymongo
+# import os
+# from bson import ObjectId
+# from .models import User
+
+# # Initialize Flask-Login
+# login_manager = LoginManager()
+# login_manager.login_view = "auth.login"
+
+# @login_manager.user_loader
+# def load_user(user_id):
+#     db = current_app.config['DB_CONNECTION']
+#     user = db.users.find_one({"_id": ObjectId(user_id)})
+#     if user:
+#         return User(
+#             id=str(user['_id']),
+#             username=user['username'],
+#             email=user['email'],
+#             phone_no=user.get('phone_no'),
+#             role=user.get('role', 'user')
+#         )
+#     return None
+
+# def create_app():
+#     """
+#     Application Factory: Creates and configures the Flask app.
+#     """
+#     app = Flask(__name__)
+
+#     # Load configurations
+#     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'DEV')
+#     app.config['MONGO_URI'] = os.getenv('MONGO_URI', 'mongodb://3.86.209.148:27017')
+#     app.config['MONGO_DB_NAME'] = os.getenv('MONGO_DB_NAME', 'Gardening_Companion')
+
+#     # Set up MongoDB connection
+#     try:
+#         mongo_client = pymongo.MongoClient(app.config['MONGO_URI'])
+#         db = mongo_client[app.config['MONGO_DB_NAME']]
+#         app.config['DB_CONNECTION'] = db
+#     except pymongo.errors.PyMongoError as e:
+#         print(f"Error connecting to MongoDB: {e}")
+#         raise
+
+#     # Initialize Flask extensions
+#     login_manager.init_app(app)
+
+#     # Register blueprints
+#     from .routes import main
+#     app.register_blueprint(main)
+
+#     from .auth import auth
+#     app.register_blueprint(auth, url_prefix='/auth')
+
+#     from .dashboard import dashboard_bp
+#     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
+
+#     return app
+
+
+
 from flask import Flask, current_app
 from flask_login import LoginManager
 import pymongo
@@ -79,6 +141,7 @@ from .models import User
 from flask_dance.contrib.google import make_google_blueprint
 from urllib.parse import quote_plus
 from flask_mail import Mail
+
 
 # Load environment variables
 load_dotenv()
@@ -101,7 +164,8 @@ def load_user(user_id):
             role=user.get('role', 'user')
         )
     return None
-
+from dotenv import load_dotenv
+load_dotenv()
 def create_app():
     """
     Application Factory: Creates and configures the Flask app.
@@ -125,6 +189,7 @@ def create_app():
     app.config['MONGO_URI'] = MONGO_URI
     app.config['MONGO_DB_NAME'] = os.getenv('MONGO_DB_NAME')
 
+
     # Email Configuration
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'  
     app.config['MAIL_PORT'] = 587  # Use port 587 for TLS
@@ -132,6 +197,7 @@ def create_app():
     app.config['MAIL_USE_SSL'] = False  # Don't use SSL since TLS is enabled
     app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
 
     # Set up MongoDB connection
     try:
