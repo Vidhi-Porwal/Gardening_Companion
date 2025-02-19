@@ -55,34 +55,37 @@ def ensure_default_garden(user_id):
 @role_required('user', 'admin')
 def dashboard():
     try:
+        # Access the MongoDB database
         db = current_app.config['DB_CONNECTION']
         ensure_default_garden(current_user.id)
+        # Fetch user's plants and all available plants
+        user_plants = list(db.garden_plant.find({"user_id": current_user.id}))
+        user_plants_data = list(db.garden_plant.find({"user_id": current_user.id}, {"plant_id": 1, "_id": 0}))
+        user_garden = list(db.garden.find({"user_id": ObjectId(current_user.id)}, {"gardenName": 1}))
+        print (user_garden,"9d876fg5hj4k3l2")
+        # Extract plant IDs into a list
+        plant_ids = [entry["plant_id"] for entry in user_plants_data]
 
+        # Fetch full plant details from plants collection
+        user_plants = list(db.plants.find({"_id": {"$in": plant_ids}}))
+        plants = list(db.plants.find())
+
+        user = db.users.find_one({"_id": ObjectId(current_user.id)}, {"role": 1, "_id": 0})
+        # print(user["role"])
+        user_role=user["role"]
+       
+
+        gemini_response = None
+    
+        
+        
         # Get garden_id from form submission or set a default
         garden_id = request.form.get('garden_id') or request.args.get('garden_id')
         print ("111111111", garden_id)
 
-        # If no garden_id is provided, set the first available garden as default
-        user_garden = list(db.garden.find({"user_id": ObjectId(current_user.id)}, {"gardenName": 1}))
+        print("user_garden",user_garden)
         if not garden_id and user_garden:
             garden_id = str(user_garden[0]['_id'])  # Set first garden as default
-
-        # Fetch user's plants filtered by user_id and garden_id
-        user_plants_data = list(db.garden_plant.find(
-            {"user_id": ObjectId(current_user.id), "garden_id": ObjectId(garden_id)},
-            {"plant_id": 1, "_id": 0}
-        ))
-
-        plant_ids = [entry["plant_id"] for entry in user_plants_data]
-        user_plants = list(db.plants.find({"_id": {"$in": plant_ids}}))
-        plants = list(db.plants.find())  # All available plants
-
-        user = db.users.find_one({"_id": ObjectId(current_user.id)}, {"role": 1, "_id": 0})
-
-        user_role = user["role"]
-
-
-        gemini_response = None
 
         # Handle POST Requests
         if request.method == 'POST':
