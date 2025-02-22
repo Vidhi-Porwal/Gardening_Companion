@@ -450,3 +450,44 @@ def get_plant(plant_id):
 
     plant["_id"] = str(plant["_id"])  # Convert ObjectId to string for JSON response
     return jsonify(plant)
+
+
+
+
+
+@dashboard_bp.route('/request_plant', methods=['GET', 'POST'])
+@login_required
+def request_plant():
+    db = current_app.config['DB_CONNECTION']
+
+    if request.method == 'GET':
+        return render_template('request_plant.html')
+
+    # Handle form submission
+    plant_name = request.form.get("plantName", "").strip()
+    plant_description = request.form.get("plantDescription", "").strip()
+
+    if not plant_name:
+        flash("Plant name is required!", "danger")
+        return redirect(url_for('dashboard.request_plant'))
+
+    # Check if the plant already exists in the main plants database
+    existing_plant = db.plants.find_one({"commonName": {"$regex": f"^{plant_name}$", "$options": "i"}})
+
+    if existing_plant:
+        flash("This plant is already available in the database!", "warning")
+        return redirect(url_for('dashboard.request_plant'))
+
+    # Insert request into database if plant doesn't exist
+    db.plant_requests.insert_one({
+        "plantName": plant_name,
+        "description": plant_description,
+        "user_id": ObjectId(current_user.id),
+        "status": "pending",
+        "requested_at": datetime.now()
+    })
+
+    flash("Your plant request has been submitted for approval!", "success")
+    return redirect(url_for('dashboard.dashboard'))
+
+
