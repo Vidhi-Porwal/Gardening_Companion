@@ -154,3 +154,8 @@ document.getElementById("gardenSelector").addEventListener("change", function() 
     // Ensure we scroll on page load and when a new message is sent
     window.onload = scrollToBottom; // Scroll when the page is loaded
     document.querySelector('form').onsubmit = scrollToBottom;
+// filter on the basis of garden    
+function filterPlants() {
+    let garden_id = document.getElementById("gardenSelect").value;
+    window.location.href = `/dashboard?garden_id=${garden_id}`;
+}

@@ -57,21 +57,26 @@ def dashboard():
     try:
         # Access the MongoDB database
         db = current_app.config['DB_CONNECTION']
+        garden_id = request.args.get("garden_id")        
         ensure_default_garden(current_user.id)
         # Fetch user's plants and all available plants
-        user_plants = list(db.garden_plant.find({"user_id": current_user.id}))
+        print(garden_id,"garden id ")
+        user_plants = list(db.garden_plant.find({"user_id": current_user.id,"garden_id":garden_id}))
         user_plants_data = list(db.garden_plant.find({"user_id": current_user.id}, {"plant_id": 1, "_id": 0}))
-        user_garden = list(db.garden.find({"user_id": ObjectId(current_user.id)}, {"gardenName": 1}))
-        print (user_garden,"9d876fg5hj4k3l2")
+        
+        id_current_user=ObjectId(current_user.id)
+        
+        user_garden = list(db.garden.find({"user_id": id_current_user},{"gardenName": 1}))
         # Extract plant IDs into a list
         plant_ids = [entry["plant_id"] for entry in user_plants_data]
-
+        print("user garden",user_garden)
         # Fetch full plant details from plants collection
         user_plants = list(db.plants.find({"_id": {"$in": plant_ids}}))
         plants = list(db.plants.find())
-
+         
         user = db.users.find_one({"_id": ObjectId(current_user.id)}, {"role": 1, "_id": 0})
         # print(user["role"])
+        print(user)
         user_role=user["role"]
        
 
