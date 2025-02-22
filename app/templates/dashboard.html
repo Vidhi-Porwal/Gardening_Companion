@@ -195,6 +195,12 @@
         </div>
     </div>
 </div>
+{% if user_role == "user" %}
+<a href="{{ url_for('dashboard.request_plant') }}" class="btn btn-warning mt-4">Request a New Plant</a>
+{% endif %}
+
+
+
 
 <div id="chatbot-container" class="chatbot-container">
     <!-- Chatbot Toggle Button -->
