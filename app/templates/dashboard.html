@@ -33,7 +33,7 @@
             <label for="gardenSelector" class="me-2">Select Garden:</label>
             <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
                 {% for garden in user_garden %}
-                    <option value="{{ garden['_id'] }}">{{ garden['gardenName'] }}</option>
+                    <option value="{{ garden }}">{{ garden }}</option>
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
@@ -176,6 +176,14 @@
                             <option value="" disabled selected>Select a plant</option>
                             {% for plant in plants %}
                                 <option value="{{ plant._id}}" name="">{{ plant.commonName }}</option>
+                                
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <select id="age_id" class="form-control" name="plant_id" required>
+                            <option value="" disabled selected>Select age</option>
+                            {% for a in age %}
+                                <option value="{{ a._id}}" name="">{{ a.age }}</option>
                                 
                             {% endfor %}
                         </select>
