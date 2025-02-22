@@ -491,3 +491,18 @@ def request_plant():
     return redirect(url_for('dashboard.dashboard'))
 
 
+@dashboard_bp.route('/admin/pending_plants', methods=['GET'])
+@login_required
+def pending_plants():
+    if current_user.role != "admin":
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('dashboard.dashboard'))
+
+    db = current_app.config['DB_CONNECTION']
+    pending_requests = list(db.plant_requests.find({"status": "pending"}))
+
+    if not pending_requests:
+        flash("No pending plant requests!", "info")
+        return redirect(url_for('dashboard.dashboard'))
+
+    return render_template('pending_plants.html', pending_requests=pending_requests)
