@@ -31,10 +31,10 @@
         <!-- Garden Selection Dropdown -->
         <div class="garden-dropdown">
             <label for="gardenSelector" class="me-2">Select Garden:</label>
-            <select id="gardenSelector" class="form-select d-inline-block w-auto" onchange="handleGardenSelection(this)">
+            <select  id="gardenSelect" name="garden_id" onchange="filterPlants()" class="form-select d-inline-block w-auto">
                 <option value="default">My Garden (Default)</option>
                 {% for garden in user_garden %}
-                    <option value="{{ garden['_id'] }}">{{ garden['gardenName'] }}</option>
+                    <option value="{{ garden['_id'] }}">{{ garden["gardenName"] }}</option>
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
