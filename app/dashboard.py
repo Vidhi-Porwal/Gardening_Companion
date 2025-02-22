@@ -506,3 +506,37 @@ def pending_plants():
         return redirect(url_for('dashboard.dashboard'))
 
     return render_template('pending_plants.html', pending_requests=pending_requests)
+
+@dashboard_bp.route('/admin/approve_plant/<request_id>', methods=['POST'])
+@login_required
+def approve_plant(request_id):
+    if current_user.role != "admin":
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('dashboard.dashboard'))
+
+    db = current_app.config['DB_CONNECTION']
+    plant_request = db.plant_requests.find_one({"_id": ObjectId(request_id)})
+
+    if plant_request:
+        # Move plant request to approved plants
+        db.plants.insert_one({
+            "commonName": plant_request["plantName"],
+            "saplingDescription": plant_request["description"]
+        })
+        db.plant_requests.delete_one({"_id": ObjectId(request_id)})
+        flash("Plant request approved!", "success")
+
+    return redirect(url_for('dashboard.pending_plants'))
+
+@dashboard_bp.route('/admin/reject_plant/<request_id>', methods=['POST'])
+@login_required
+def reject_plant(request_id):
+    if current_user.role != "admin":
+        flash("Unauthorized access!", "danger")
+        return redirect(url_for('dashboard.dashboard'))
+
+    db = current_app.config['DB_CONNECTION']
+    db.plant_requests.delete_one({"_id": ObjectId(request_id)})
+    flash("Plant request rejected!", "danger")
+
+    return redirect(url_for('dashboard.pending_plants'))
