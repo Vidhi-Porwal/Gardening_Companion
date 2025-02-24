@@ -1,3 +1,6 @@
+<!-- Bootstrap CSS (Make sure it's included in your project) -->
+
+
 {% extends "base.html" %}
 
 {% block title %}Dashboard - Gardening Companion{% endblock %}
@@ -171,21 +174,44 @@
                 <!-- Add Plant Form -->
                 <form method="POST" action="{{ url_for('dashboard.dashboard') }}">
                     <div class="mb-3">
-                        <label for="plant_id" class="form-label">Select Plant:</label>
+                        <label class="form-label">Select Plant:</label>
                         <input type="hidden" name="garden_id" value="{{ selected_garden }}">
-                        <select id="plant_id" class="form-control" name="plant_id" required>
-                            <option value="" disabled selected>Select a plant</option>
-                            {% for plant in plants %}
-                                <option value="{{ plant._id}}" name="">{{ plant.commonName }}</option>
-                                
-                            {% endfor %}
-                        </select>
+                        <input type="hidden" name="plant_id" id="selectedPlant"> <!-- Hidden input for form submission -->
+
+                        <!-- Custom Searchable Dropdown -->
+                        <div class="dropdown w-100">
+    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="plantDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
+        Select a plant
+    </button>
+    <ul class="dropdown-menu w-100 p-2" id="plantDropdownMenu" style="max-height: 250px; overflow-y: auto;">
+        <li class="p-2">
+            <input type="text" class="form-control" id="plantSearch" placeholder="Search plants...">
+        </li>
+        <ul id="plantList" class="list-unstyled">
+            {% if plants %}
+                {% for plant in plants %}
+                    <li><a class="dropdown-item plant-option" href="#" data-value="{{ plant._id }}">{{ plant.commonName }}</a></li>
+                {% endfor %}
+            {% else %}
+                <li class="p-2 text-muted">No plants available</li>
+            {% endif %}
+        </ul>
+    </ul>
+</div>
+
+                        
+
+                            
+                        
+
                         <br>
-                        <select id="age_id" class="form-control" name="plant_id" required>
+
+                        <!-- Age Dropdown (Without Search) -->
+                        <label for="age_id" class="form-label">Select Age:</label>
+                        <select id="age_id" class="form-control" name="age_id" required>
                             <option value="" disabled selected>Select age</option>
                             {% for a in age %}
-                                <option value="{{ a._id}}" name="">{{ a.age }}</option>
-                                
+                                <option value="{{ a._id }}">{{ a.age }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -195,6 +221,7 @@
         </div>
     </div>
 </div>
+
 {% if user_role == "user" %}
 <a href="{{ url_for('dashboard.request_plant') }}" class="btn btn-warning mt-4">Request a New Plant</a>
 {% endif %}
@@ -283,4 +310,6 @@
 </div>
 
 {% endblock %}
+
+
 
