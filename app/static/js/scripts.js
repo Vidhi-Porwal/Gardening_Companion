@@ -159,3 +159,59 @@ function filterPlants() {
     let garden_id = document.getElementById("gardenSelect").value;
     window.location.href = `/dashboard?garden_id=${garden_id}`;
 }
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const plantDropdownButton = document.getElementById("plantDropdownButton");
+    const plantDropdownMenu = document.getElementById("plantDropdownMenu");
+    const plantSearch = document.getElementById("plantSearch");
+    const plantList = document.getElementById("plantList");
+    const selectedPlantInput = document.getElementById("selectedPlant");
+    const modal = document.getElementById("addPlantModal");
+
+    // Open dropdown on button click
+    plantDropdownButton.addEventListener("click", function () {
+        plantDropdownMenu.classList.toggle("show");
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function (event) {
+        if (!plantDropdownButton.contains(event.target) && !plantDropdownMenu.contains(event.target)) {
+            plantDropdownMenu.classList.remove("show");
+        }
+    });
+
+    // Filter plants dynamically based on search input
+    plantSearch.addEventListener("input", function () {
+        const searchValue = plantSearch.value.toLowerCase();
+        const plantOptions = plantList.getElementsByClassName("plant-option");
+
+        for (let i = 0; i < plantOptions.length; i++) {
+            let text = plantOptions[i].innerText.toLowerCase();
+            plantOptions[i].style.display = text.includes(searchValue) ? "block" : "none";
+        }
+    });
+
+    // Select a plant and update button text and hidden input
+    plantList.addEventListener("click", function (event) {
+        if (event.target.classList.contains("plant-option")) {
+            event.preventDefault();
+            let selectedPlantName = event.target.innerText;
+            let selectedPlantId = event.target.getAttribute("data-value");
+
+            // Update button text
+            plantDropdownButton.innerText = selectedPlantName;
+
+            // Update hidden input
+            selectedPlantInput.value = selectedPlantId;
+
+            // Close the dropdown
+            plantDropdownMenu.classList.remove("show");
+        }
+    });
+
+    // Ensure dropdown closes when the modal closes
+    modal.addEventListener("hidden.bs.modal", function () {
+        plantDropdownMenu.classList.remove("show");
+    });
+});
