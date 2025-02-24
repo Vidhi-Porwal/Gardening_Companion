@@ -180,33 +180,26 @@
 
                         <!-- Custom Searchable Dropdown -->
                         <div class="dropdown w-100">
-    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="plantDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
-        Select a plant
-    </button>
-    <ul class="dropdown-menu w-100 p-2" id="plantDropdownMenu" style="max-height: 250px; overflow-y: auto;">
-        <li class="p-2">
-            <input type="text" class="form-control" id="plantSearch" placeholder="Search plants...">
-        </li>
-        <ul id="plantList" class="list-unstyled">
-            {% if plants %}
-                {% for plant in plants %}
-                    <li><a class="dropdown-item plant-option" href="#" data-value="{{ plant._id }}">{{ plant.commonName }}</a></li>
-                {% endfor %}
-            {% else %}
-                <li class="p-2 text-muted">No plants available</li>
-            {% endif %}
-        </ul>
-    </ul>
-</div>
-
-                        
-
-                            
-                        
-
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start" type="button" id="plantDropdownButton" data-bs-toggle=" dropdown" aria-expanded="false">
+                            Select a plant
+                            </button>
+                            <ul class="dropdown-menu w-100 p-2" id="plantDropdownMenu" style="max-height: 250px; overflow-y: auto;">
+                                <li class="p-2">
+                                    <input type="text" class="form-control" id="plantSearch" placeholder="Search plants...">
+                                </li>
+                                <ul id="plantList" class="list-unstyled">
+                                    {% if plants %}
+                                        {% for plant in plants %}
+                                            <li><a class="dropdown-item plant-option" href="#" data-value="{{ plant._id }}">{{ plant.commonName }}</a></li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li class="p-2 text-muted">No plants available</li>
+                                    {% endif %}
+                                </ul>
+                            </ul>
+                        </div>
                         <br>
-
-                        <!-- Age Dropdown (Without Search) -->
+                         <!-- Age Dropdown (Without Search) -->
                         <label for="age_id" class="form-label">Select Age:</label>
                         <select id="age_id" class="form-control" name="age_id" required>
                             <option value="" disabled selected>Select age</option>
@@ -221,7 +214,6 @@
         </div>
     </div>
 </div>
-
 {% if user_role == "user" %}
 <a href="{{ url_for('dashboard.request_plant') }}" class="btn btn-warning mt-4">Request a New Plant</a>
 {% endif %}
