@@ -1,167 +1,92 @@
-/*!
-* Start Bootstrap - Clean Blog v6.0.9 (https://startbootstrap.com/theme/clean-blog)
-* Copyright 2013-2023 Start Bootstrap
-* Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-clean-blog/blob/master/LICENSE)
-*/
-window.addEventListener('DOMContentLoaded', () => {
-    let scrollPos = 0;
+document.addEventListener("DOMContentLoaded", function () {
+    // Navbar Scroll Effect
     const mainNav = document.getElementById('mainNav');
-    const headerHeight = mainNav.clientHeight;
-    window.addEventListener('scroll', function() {
-        const currentTop = document.body.getBoundingClientRect().top * -1;
-        if ( currentTop < scrollPos) {
-            // Scrolling Up
-            if (currentTop > 0 && mainNav.classList.contains('is-fixed')) {
-                mainNav.classList.add('is-visible');
+    if (mainNav) {
+        let scrollPos = 0;
+        const headerHeight = mainNav.clientHeight;
+        window.addEventListener('scroll', function () {
+            const currentTop = document.body.getBoundingClientRect().top * -1;
+            if (currentTop < scrollPos) {
+                if (currentTop > 0 && mainNav.classList.contains('is-fixed')) {
+                    mainNav.classList.add('is-visible');
+                } else {
+                    mainNav.classList.remove('is-visible', 'is-fixed');
+                }
             } else {
-                console.log(123);
-                mainNav.classList.remove('is-visible', 'is-fixed');
+                mainNav.classList.remove('is-visible');
+                if (currentTop > headerHeight && !mainNav.classList.contains('is-fixed')) {
+                    mainNav.classList.add('is-fixed');
+                }
             }
-        } else {
-            // Scrolling Down
-            mainNav.classList.remove(['is-visible']);
-            if (currentTop > headerHeight && !mainNav.classList.contains('is-fixed')) {
-                mainNav.classList.add('is-fixed');
-            }
-        }
-        scrollPos = currentTop;
-    });
-})
-// dashboard modal
-//     document.addEventListener('DOMContentLoaded', () => {
-// const plantDetailsModal = document.getElementById('plantDetailsModal');
+            scrollPos = currentTop;
+        });
+    }
 
-// document.addEventListener('click', (event) => {
-//     if (event.target.classList.contains('plant-card-image')) {
-//         const image = event.target;
-
-//         // Fetch data attributes
-//         const plantId = image.dataset.id;
-//         const plantName = image.dataset.name;
-//         const plantScientificName = image.dataset.scientificName;
-//         const plantRank = image.dataset.rank;
-//         const plantFamily = image.dataset.family;
-//         const plantGenus = image.dataset.genus;
-//         const plantEdible = image.dataset.edible;
-//         const plantSaplingDescription = image.dataset.saplingDescription;
-//         const plantImageUrl = image.dataset.imageUrl;
-
-//         // Populate modal content
-//         document.getElementById('plantImage').src = plantImageUrl;
-//         document.getElementById('plantName').textContent = plantName;
-//         document.getElementById('plantScientificName').textContent = plantScientificName;
-//         document.getElementById('plantRank').textContent = plantRank;
-//         document.getElementById('plantFamily').textContent = plantFamily;
-//         document.getElementById('plantGenus').textContent = plantGenus;
-//         document.getElementById('plantEdible').textContent = plantEdible;
-//         document.getElementById('plantSaplingDescription').textContent = plantSaplingDescription;
-
-//         // Show the modal
-//         const bootstrapModal = new bootstrap.Modal(plantDetailsModal);
-//         bootstrapModal.show();
-//     }
-// });
-// });
-document.addEventListener('DOMContentLoaded', () => {
+    // Dashboard Modal
     const plantImages = document.querySelectorAll('.card-img-top');
     const plantDetailsModal = document.getElementById('plantDetailsModal');
-
-    plantImages.forEach(image => {
-        image.addEventListener('click', () => {
-            // Fetch data attributes
-            const plantId = image.getAttribute('data-id');
-            const plantName = image.getAttribute('data-name');
-            const plantScientificName = image.getAttribute('data-scientific-name');
-            
-           
-            const plantRank = image.getAttribute('data-rank');
-            const plantFamily = image.getAttribute('data-family');
-            const plantGenus = image.getAttribute('data-genus');
-            const plantEdible = image.getAttribute('data-edible');
-            const plantSaplingDescription = image.getAttribute('data-sapling-description');
-            
-            const plantImageUrl = image.getAttribute('data-image-url');
-
-            // Populate modal content
-            document.getElementById('plantImage').src = plantImageUrl || '/static/images/default_plant.jpg';
-            document.getElementById('plantName').textContent = plantName || 'Unknown';
-            document.getElementById('plantScientificName').textContent = plantScientificName || 'N/A';
-            
-            
-            document.getElementById('plantRank').textContent = plantRank || 'N/A';
-            document.getElementById('plantFamily').textContent = plantFamily || 'N/A';
-            document.getElementById('plantGenus').textContent = plantGenus || 'N/A';
-            document.getElementById('plantEdible').textContent = plantEdible || 'N/A';
-            document.getElementById('plantSaplingDescription').textContent = plantSaplingDescription || 'N/A';
-            
-            document.getElementById('modalPlantId').value = plantId;
-
-            // Show modal
-            const bootstrapModal = new bootstrap.Modal(plantDetailsModal);
-            bootstrapModal.show();
+    if (plantImages.length > 0 && plantDetailsModal) {
+        plantImages.forEach(image => {
+            image.addEventListener('click', () => {
+                document.getElementById('plantImage').src = image.getAttribute('data-image-url') || '/static/images/default_plant.jpg';
+                document.getElementById('plantName').textContent = image.getAttribute('data-name') || 'Unknown';
+                document.getElementById('plantScientificName').textContent = image.getAttribute('data-scientific-name') || 'N/A';
+                document.getElementById('plantRank').textContent = image.getAttribute('data-rank') || 'N/A';
+                document.getElementById('plantFamily').textContent = image.getAttribute('data-family') || 'N/A';
+                document.getElementById('plantGenus').textContent = image.getAttribute('data-genus') || 'N/A';
+                document.getElementById('plantEdible').textContent = image.getAttribute('data-edible') || 'N/A';
+                document.getElementById('plantSaplingDescription').textContent = image.getAttribute('data-sapling-description') || 'N/A';
+                document.getElementById('modalPlantId').value = image.getAttribute('data-id');
+                new bootstrap.Modal(plantDetailsModal).show();
+            });
         });
-    });
-});
-
-
-
-// select garden dropdown
-document.getElementById('gardenSelector').addEventListener('change', function () {
-    const selectedGarden = this.value;
-    document.querySelectorAll('.col-md-4').forEach(plantCard => {
-        const gardenId = plantCard.dataset.gardenId;
-        plantCard.style.display = (selectedGarden === 'all' || gardenId === selectedGarden) ? '' : 'none';
-    });
-});
-
-//add garden
-function handleGardenSelection(select) {
-    if (select.value === "add") {
-        // Show the "Add Garden" modal
-        new bootstrap.Modal(document.getElementById('addGardenModal')).show();
-        select.value = "default"; // Reset dropdown selection after showing modal
     }
-}
 
-
-document.getElementById("gardenSelector").addEventListener("change", function() {
-    if (this.value === "add") {
-        var addGardenModal = new bootstrap.Modal(document.getElementById("addGardenModal"));
-        addGardenModal.show();
-        this.value = ""; // Reset dropdown after opening modal
-    } else {
-        document.getElementById("gardenForm").submit(); // Submit form for normal selections
+    // Select Garden Dropdown
+    const gardenSelector = document.getElementById('gardenSelector');
+    if (gardenSelector) {
+        gardenSelector.addEventListener('change', function () {
+            if (this.value === "add") {
+                var addGardenModal = new bootstrap.Modal(document.getElementById("addGardenModal"));
+                addGardenModal.show();
+                this.value = "";
+            } else {
+                const gardenForm = document.getElementById("gardenForm");
+                if (gardenForm) gardenForm.submit();
+            }
+        });
     }
-});
 
-
-
-// profile
-    function toggleEdit() {
-        const fields = document.querySelectorAll('.profile-details input');
-        const saveButton = document.getElementById('save-button');
-        const editButton = document.querySelector('[onclick="toggleEdit()"]');
-        
-        fields.forEach(field => field.readOnly = !field.readOnly);
-        saveButton.classList.toggle('d-none');
-        editButton.textContent = fields[0].readOnly ? "Edit Profile" : "Cancel Editing";
+    // Profile Edit
+    const saveButton = document.getElementById('save-button');
+    const editButton = document.querySelector('[onclick="toggleEdit()"]');
+    if (editButton && saveButton) {
+        window.toggleEdit = function () {
+            const fields = document.querySelectorAll('.profile-details input');
+            fields.forEach(field => field.readOnly = !field.readOnly);
+            saveButton.classList.toggle('d-none');
+            editButton.textContent = fields[0].readOnly ? "Edit Profile" : "Cancel Editing";
+        };
     }
+
+    // Chat Auto-scroll
     function scrollToBottom() {
-        var chatBody = document.getElementById('chat-body');
-        chatBody.scrollTop = chatBody.scrollHeight;
+        const chatBody = document.getElementById('chat-body');
+        if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
     }
-    
-    // Ensure we scroll on page load and when a new message is sent
-    window.onload = scrollToBottom; // Scroll when the page is loaded
-    document.querySelector('form').onsubmit = scrollToBottom;
-// filter on the basis of garden    
+
+    scrollToBottom(); // Scroll when the page loads
+
+    const chatForm = document.querySelector('form');
+    if (chatForm) {
+        chatForm.onsubmit = scrollToBottom;
+    }
+   
+});
 function filterPlants() {
     let garden_id = document.getElementById("gardenSelect").value;
     window.location.href = `/dashboard?garden_id=${garden_id}`;
 }
-
-
-document.addEventListener("DOMContentLoaded", function () {
     const plantDropdownButton = document.getElementById("plantDropdownButton");
     const plantDropdownMenu = document.getElementById("plantDropdownMenu");
     const plantSearch = document.getElementById("plantSearch");
@@ -215,3 +140,4 @@ document.addEventListener("DOMContentLoaded", function () {
         plantDropdownMenu.classList.remove("show");
     });
 });
+

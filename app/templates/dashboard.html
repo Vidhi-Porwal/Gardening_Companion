@@ -31,57 +31,40 @@
         </form>
             {% endif %}
 
-        <!-- Garden Selection Dropdown -->
-        <!-- <div class="garden-dropdown">
+        <!-- Garden Selection Dropdown  -->
+         <div class="garden-dropdown">
             <label for="gardenSelector" class="me-2">Select Garden:</label>
             <select  id="gardenSelect" name="garden_id" onchange="filterPlants()" class="form-select d-inline-block w-auto">
                 <option value="default">My Garden (Default)</option>
                 {% for garden in user_garden %}
-                    <option value="{{ garden }}">{{ garden }}</option>
+                    <option value="{{ garden }}">{{ garden["gardenName"] }}</option>
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
-        </div>  -->
-      
-       
-
-        <form id="gardenForm" method="POST" action="/select-garden">
-            <div class="garden-dropdown">
-                <label for="gardenSelector" class="me-2">Select Garden:</label>
-                <select id="gardenSelector" name="selectedGarden" class="form-select d-inline-block w-auto">
-                    {% for garden in user_garden %}
-                        <option value="{{ garden['_id'] }}">{{ garden['gardenName'] }}</option>
-                    {% endfor %}
-                    <option value="add">+ Add New Garden</option>
-                </select>
-            </div>
-        </form>
-
-
- 
-
-        <!-- Modal for Adding a New Garden -->
-        <div id="addGardenModal" class="modal fade" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add New Garden</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="{{ url_for('dashboard.add_garden') }}">
-                            <div class="mb-3">
-                                <label for="newGardenName" class="form-label">Garden Name:</label>
-                                <input type="text" id="newGardenName" name="garden_name" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary"> + Add Garden</button>
-                        </form>
-                    </div>
+        </div> 
+   
+     <!-- Modal for Adding a New Garden -->
+    <div id="addGardenModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Garden</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('dashboard.add_garden') }}">
+                        <div class="mb-3">
+                            <label for="newGardenName" class="form-label">Garden Name:</label>
+                            <input type="text" id="newGardenName" name="garden_name" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary"> + Add Garden</button>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>    
-    
+        </div>
+
+    </div>
     <!-- Display User Plants -->
     <div class="row g-4">
         {% for plant in user_plants %}
@@ -199,12 +182,14 @@
                             </ul>
                         </div>
                         <br>
+
                          <!-- Age Dropdown (Without Search) -->
                         <label for="age_id" class="form-label">Select Age:</label>
                         <select id="age_id" class="form-control" name="age_id" required>
                             <option value="" disabled selected>Select age</option>
                             {% for a in age %}
                                 <option value="{{ a._id }}">{{ a.age }}</option>
+
                             {% endfor %}
                         </select>
                     </div>
@@ -302,6 +287,4 @@
 </div>
 
 {% endblock %}
-
-
 
