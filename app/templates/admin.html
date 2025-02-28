@@ -291,13 +291,19 @@
     </main>
 
     <script>
-        // Prefill the form if redirected from approval
-    window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        document.getElementById('commonName').value = urlParams.get('commonName') || '';
-        document.getElementById('saplingDescription').value = urlParams.get('saplingDescription') || '';
-    };
-        function addPlant() {
+        
+    // Prefill the form if redirected from approval
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById('commonName').value = urlParams.get('commonName') || '';
+    document.getElementById('saplingDescription').value = urlParams.get('saplingDescription') || '';
+};
+
+// Function to add a plant
+function addPlant() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestId = urlParams.get('request_id'); // Get request_id from URL
+
     const plantData = {
         commonName: document.getElementById('commonName').value,
         scientificName: document.getElementById('scientificName').value,
@@ -308,8 +314,13 @@
         edible: document.getElementById('edible').checked,
         saplingDescription: document.getElementById('saplingDescription').value
     };
-    
-    fetch('/dashboard/add_plant', {
+
+    let apiUrl = '/dashboard/add_plant';
+    if (requestId) {
+        apiUrl += `?request_id=${requestId}`; // Append request_id if available
+    }
+
+    fetch(apiUrl, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(plantData)
@@ -317,10 +328,11 @@
     .then(response => response.json())
     .then(data => {
         alert(data.message);
-        window.location.href = '/dashboard/admin/pending_plants'; // Redirect back to pending plants
+        window.location.href = '/dashboard/admin/pending_plants'; // Redirect to pending plants
     })
     .catch(error => console.error('Error:', error));
 }
+
         function searchTable(inputId, tableId) {
             let input = document.getElementById(inputId);
             let filter = input.value.toLowerCase();
