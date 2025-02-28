@@ -387,27 +387,61 @@ def update_user_role(user_id):
 
 
 
-@dashboard_bp.route('/add_plant', methods=['POST'])
+# @dashboard_bp.route('/add_plant', methods=['GET','POST'])
+# @login_required
+# def add_plant():
+#     if current_user.role != 'admin':
+#         return redirect(url_for('dashboard.dashboard'))
+    
+#     db = current_app.config['DB_CONNECTION']
+#     data = request.json
+#     new_plant = {
+#         "commonName": data.get('commonName'),
+#         "scientificName": data.get('scientificName'),
+#         "rank": data.get('rank'),
+#         "familyCommonName": data.get('familyCommonName'),
+#         "genus": data.get('genus'),
+#         "imageURL": data.get('imageURL'),
+#         "edible": data.get('edible', False),
+#         "saplingDescription": data.get('saplingDescription')
+#     }
+    
+#     db.plants.insert_one(new_plant)  # MongoDB insertion
+#     return jsonify({"message": "Plant added successfully!"})
+@dashboard_bp.route('/add_plant', methods=['GET', 'POST'])
 @login_required
 def add_plant():
     if current_user.role != 'admin':
         return redirect(url_for('dashboard.dashboard'))
-    
+
     db = current_app.config['DB_CONNECTION']
-    data = request.json
-    new_plant = {
-        "commonName": data.get('commonName'),
-        "scientificName": data.get('scientificName'),
-        "rank": data.get('rank'),
-        "familyCommonName": data.get('familyCommonName'),
-        "genus": data.get('genus'),
-        "imageURL": data.get('imageURL'),
-        "edible": data.get('edible', False),
-        "saplingDescription": data.get('saplingDescription')
-    }
-    
-    db.plants.insert_one(new_plant)  # MongoDB insertion
-    return jsonify({"message": "Plant added successfully!"})
+
+    # If it's a GET request, show the form with pre-filled values
+    if request.method == 'GET':
+        common_name = request.args.get('commonName', '')
+        sapling_desc = request.args.get('saplingDescription', '')
+        return render_template('admin.html', commonName=common_name, saplingDescription=sapling_desc)
+
+    # If it's a POST request, handle the plant addition
+    if request.method == 'POST':
+        if not request.is_json:
+            return jsonify({"error": "Invalid content type, expected JSON"}), 415  # Ensure JSON format
+
+        data = request.json  # Expecting JSON data
+        new_plant = {
+            "commonName": data.get('commonName'),
+            "scientificName": data.get('scientificName'),
+            "rank": data.get('rank'),
+            "familyCommonName": data.get('familyCommonName'),
+            "genus": data.get('genus'),
+            "imageURL": data.get('imageURL'),
+            "edible": data.get('edible', False),
+            "saplingDescription": data.get('saplingDescription')
+        }
+
+        db.plants.insert_one(new_plant)  # MongoDB insertion
+        return jsonify({"message": "Plant added successfully!"})
+
 
 @dashboard_bp.route('/edit_plant/<plant_id>', methods=['PUT'])
 @login_required
@@ -497,6 +531,27 @@ def pending_plants():
 
     return render_template('pending_plants.html', pending_requests=pending_requests)
 
+# @dashboard_bp.route('/admin/approve_plant/<request_id>', methods=['POST'])
+# @login_required
+# def approve_plant(request_id):
+#     if current_user.role != "admin":
+#         flash("Unauthorized access!", "danger")
+#         return redirect(url_for('dashboard.dashboard'))
+
+#     db = current_app.config['DB_CONNECTION']
+#     plant_request = db.plant_requests.find_one({"_id": ObjectId(request_id)})
+
+#     if plant_request:
+#         # Move plant request to approved plants
+#         db.plants.insert_one({
+#             "commonName": plant_request["plantName"],
+#             "saplingDescription": plant_request["description"]
+#         })
+#         db.plant_requests.delete_one({"_id": ObjectId(request_id)})
+#         flash("Plant request approved!", "success")
+
+#     return redirect(url_for('dashboard.pending_plants'))
+
 @dashboard_bp.route('/admin/approve_plant/<request_id>', methods=['POST'])
 @login_required
 def approve_plant(request_id):
@@ -508,15 +563,15 @@ def approve_plant(request_id):
     plant_request = db.plant_requests.find_one({"_id": ObjectId(request_id)})
 
     if plant_request:
-        # Move plant request to approved plants
-        db.plants.insert_one({
-            "commonName": plant_request["plantName"],
-            "saplingDescription": plant_request["description"]
-        })
-        db.plant_requests.delete_one({"_id": ObjectId(request_id)})
-        flash("Plant request approved!", "success")
+        
+        # Redirect to the Add Plant form with prefilled details
+        return redirect(url_for('dashboard.add_plant', 
+                                commonName=plant_request["plantName"], 
+                                saplingDescription=plant_request.get("description", "")))
 
+    flash("Plant request not found!", "danger")
     return redirect(url_for('dashboard.pending_plants'))
+
 
 @dashboard_bp.route('/admin/reject_plant/<request_id>', methods=['POST'])
 @login_required
