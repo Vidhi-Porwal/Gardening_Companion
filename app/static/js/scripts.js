@@ -83,10 +83,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
    
 });
+
 function filterPlants() {
     let garden_id = document.getElementById("gardenSelect").value;
     window.location.href = `/dashboard?garden_id=${garden_id}`;
 }
+
+
+document.addEventListener("DOMContentLoaded", function () {
     const plantDropdownButton = document.getElementById("plantDropdownButton");
     const plantDropdownMenu = document.getElementById("plantDropdownMenu");
     const plantSearch = document.getElementById("plantSearch");
@@ -140,4 +144,3 @@ function filterPlants() {
         plantDropdownMenu.classList.remove("show");
     });
 });
-
