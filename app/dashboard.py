@@ -341,7 +341,7 @@ def chatbot():
 
 
 # Route to render admin dashboard
-@dashboard_bp.route("/admin", methods=["POST"])
+@dashboard_bp.route("/admin", methods=["POST","GET"])
 def admin_dashboard():
     db = current_app.config['DB_CONNECTION']
     users = list(db.users.find({}, {"_id": 1, "full_name": 1, "username": 1, "email": 1, "phone_no": 1, "status": 1, "role": 1}))
@@ -418,36 +418,67 @@ def add_plant():
 
     # If it's a GET request, show the form with pre-filled values
     if request.method == 'GET':
+        users = list(db.users.find({}, {"_id": 1, "full_name": 1, "username": 1, "email": 1, "phone_no": 1, "status": 1, "role": 1}))
+        plants = list(db.plants.find({}, {"_id": 1, "commonName": 1, "scientificName": 1, "familyCommonName": 1, "edible": 1,"genus":1,"imageURL":1}))
         common_name = request.args.get('commonName', '')
         sapling_desc = request.args.get('saplingDescription', '')
         request_id = request.args.get('request_id', '')
-        return render_template('admin.html', commonName=common_name, saplingDescription=sapling_desc)
+        
+        return render_template('admin.html', commonName=common_name, saplingDescription=sapling_desc,users=users,plants=plants)
 
     # If it's a POST request, handle the plant addition
     if request.method == 'POST':
-        if not request.is_json:
-            return jsonify({"error": "Invalid content type, expected JSON"}), 415  # Ensure JSON format
 
-        data = request.json  # Expecting JSON data
-        new_plant = {
-            "commonName": data.get('commonName'),
-            "scientificName": data.get('scientificName'),
-            "rank": data.get('rank'),
-            "familyCommonName": data.get('familyCommonName'),
-            "genus": data.get('genus'),
-            "imageURL": data.get('imageURL'),
-            "edible": data.get('edible', False),
-            "saplingDescription": data.get('saplingDescription')
-        }
+        # if not request.is_json:
+        #     return jsonify({"error": "Invalid content type, expected JSON"}), 415  # Ensure JSON format
+        common_name = request.form.get("commonName")
+        scientificName = request.form.get("scientificName")
+        rank = request.form.get("rank")
+        familyCommonName = request.form.get("familyCommonName")
+        genus = request.form.get("genus")
+        imageURL=request.form.get('imageURL')
+        edible=request.form.get('edible')
+        saplingDescription=request.form.get('saplingDescription')
+        db.plants.insert_one({
+        "commonName": common_name,
+        "scientificName": scientificName,
+        "rank":rank ,
+        "familyCommonName": familyCommonName,
+        "genus": genus,
+        "imageURL": imageURL,
+        "edible": edible,
+        "saplingDescription": saplingDescription,
 
-        db.plants.insert_one(new_plant)  
+    })
+
+
+        
+        
+
+
+        # data = request.json  # Expecting JSON data
+        # new_plant = {
+        #     "commonName": data.get('commonName'),
+        #     "scientificName": data.get('scientificName'),
+        #     "rank": data.get('rank'),
+        #     "familyCommonName": data.get('familyCommonName'),
+        #     "genus": data.get('genus'),
+        #     "imageURL": data.get('imageURL'),
+        #     "edible": data.get('edible', False),
+        #     "saplingDescription": data.get('saplingDescription')
+        # }
+
+
+          
 
         #delete pending plant request
         request_id = request.args.get('request_id')
         if request_id:
             db.plant_requests.delete_one({"_id": ObjectId(request_id)})
 
-        return jsonify({"message": "Plant added successfully!"})
+        flash("Your plant request has been submitted for approval!", "success")
+    return redirect(url_for('dashboard.admin_dashboard'))
+
 
 
 @dashboard_bp.route('/edit_plant/<plant_id>', methods=['PUT'])
