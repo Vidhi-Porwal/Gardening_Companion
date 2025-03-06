@@ -431,6 +431,7 @@ def add_plant():
         print(request_id)
         
         return render_template('admin.html', commonName=common_name, saplingDescription=sapling_desc)
+
     # If it's a POST request, handle the plant addition
     if request.method == 'POST':
 
@@ -473,7 +474,6 @@ def add_plant():
             "saplingDescription": data.get('saplingDescription')
         }
 
-
           
         db.plants.insert_one(new_plant)
         #delete pending plant request
@@ -481,7 +481,8 @@ def add_plant():
         if request_id:
             db.plant_requests.delete_one({"_id": ObjectId(request_id)})
 
-        return jsonify({"messege":"Plant added successfully!"})
+
+        return jsonify({"message": "Plant added successfully!"})
 
 
 
