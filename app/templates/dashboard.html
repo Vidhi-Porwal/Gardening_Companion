@@ -32,16 +32,58 @@
             {% endif %}
 
         <!-- Garden Selection Dropdown  -->
-         <div class="garden-dropdown">
+         <!-- <div class="garden-dropdown">
             <label for="gardenSelector" class="me-2">Select Garden:</label>
-            <select  id="gardenSelect" name="garden_id" onchange="filterPlants()" class="form-select d-inline-block w-auto">
-                <option value="default">My Garden (Default)</option>
+            <select  id="gardenSelect" name="garden_id" onclick="filterPlants()" class="form-select d-inline-block w-auto">
+                {% if not user_garden %}
+                      <option value="default">My Garden (Default)</option>
+                {% else %}
                 {% for garden in user_garden %}
-                    <option value="{{ garden }}">{{ garden["gardenName"] }}</option>
+                    <option value="{{ garden['_id'] }}">{{ garden["gardenName"] }}</option>
+                {% endfor %}
+                {% endif %}
+                <option value="add">+ Add New Garden</option>
+            </select>
+        </div>  -->
+        <!-- <div class="garden-dropdown">
+            <label for="gardenSelector" class="me-2">Select Garden:</label>
+            <select id="gardenSelect" name="garden_id" onclick="filterPlants()" class="form-select d-inline-block w-auto">
+                {% set selected_garden = request.args.get('garden_id', 'default') %}
+                
+                {% if not user_garden %}
+                    <option value="default" {% if selected_garden == 'default' %} selected {% endif %}>My Garden (Default)</option>
+                {% else %}
+                    {% for garden in user_garden %}
+                        <option value="{{ garden['_id'] }}" {% if selected_garden == garden['_id']|string %} selected {% endif %}>
+                            {{ garden["gardenName"] }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+                
+                <option value="add">+ Add New Garden</option>
+            </select>
+        </div> -->
+        <div class="garden-dropdown">
+            <label for="gardenSelector" class="me-2">Select Garden:</label>
+            <select id="gardenSelector" name="garden_id" class="form-select d-inline-block w-auto">
+                {% for garden in user_garden %}
+                
+                    <option value="{{ garden['_id'] }}" {% if garden_id and garden['_id']|string == garden_id %} selected {% endif %}>
+                        {{ garden["gardenName"] }}
+                    </option>
+                    
                 {% endfor %}
                 <option value="add">+ Add New Garden</option>
             </select>
-        </div> 
+        </div>
+        
+        <!-- Hidden form to persist garden selection -->
+        <form id="gardenForm" action="{{ url_for('dashboard.dashboard') }}" method="get">
+            <input type="hidden" name="garden_id" id="selectedGardenId" value="{{ garden_id }}">
+        </form>
+        
+        
+        
    
      <!-- Modal for Adding a New Garden -->
     <div id="addGardenModal" class="modal fade" tabindex="-1">

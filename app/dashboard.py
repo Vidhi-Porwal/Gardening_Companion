@@ -46,18 +46,14 @@ def dashboard():
     try:
         # Access the MongoDB database
         db = current_app.config['DB_CONNECTION']
+        default_garden_id = ensure_default_garden(current_user.id)
         garden_id = request.form.get('garden_id') or request.args.get('garden_id')
-        if garden_id:
-            match = re.search(r"ObjectId\('([0-9a-f]{24})'\)", garden_id)
-            if match:
-                garden_id = match.group(1)  # Extract only the hex string
-            else:
-                garden_id = None  # Handle invalid format
+        garden_id = garden_id or default_garden_id  # Handle invalid format
 
         print("Extracted garden_id:", garden_id)
         age=list(db.age.find())
-        ensure_default_garden(current_user.id)
-        print("garden id", garden_id)
+        
+        
         # Fetch user's plants and all available plants
         user_plants = list(db.garden_plant.find({"user_id": current_user.id, "garden_id": ObjectId(garden_id)}))
         user_plants_data = list(db.garden_plant.find({"user_id": current_user.id,"garden_id": ObjectId(garden_id)}, {"plant_id": 1, "_id": 0}))
@@ -91,6 +87,7 @@ def dashboard():
 
             # Add a plant to the selected garden
             if 'add_plant' in request.form:
+                print("garden id", garden_id)
                 print("add_plant")
                 plant_id = request.form.get('plant_id')
                 plant_id = ObjectId(plant_id)
@@ -209,13 +206,21 @@ def add_garden():
 
 def ensure_default_garden(user_id):
     db = current_app.config['DB_CONNECTION']
+
     default_garden = db.garden.find_one({"user_id": ObjectId(user_id), "gardenName": "My Garden"})
+    print(default_garden)
     if not default_garden:
-        db.garden.insert_one({
+        default_garden_id = db.garden.insert_one({
             "gardenName": "My Garden",
             "user_id": ObjectId(user_id),
             "created_at": datetime.now()
-        })
+        }).inserted_id
+    else:
+        default_garden_id = default_garden["_id"]
+    print(str(default_garden_id))
+    return str(default_garden_id)  # Ensure it's a string for URL usage
+
+    
 
 # # Helper Function: Parse Gemini Response
 def parse_gemini_response(response_text):
@@ -423,6 +428,7 @@ def add_plant():
         common_name = request.args.get('commonName', '')
         sapling_desc = request.args.get('saplingDescription', '')
         request_id = request.args.get('request_id', '')
+        print(request_id)
         
         return render_template('admin.html', commonName=common_name, saplingDescription=sapling_desc)
 
@@ -467,16 +473,17 @@ def add_plant():
             "edible": data.get('edible', False),
             "saplingDescription": data.get('saplingDescription')
         }
-        db.plants.insert_one(new_plant)  
 
           
-
+        db.plants.insert_one(new_plant)
         #delete pending plant request
         request_id = request.args.get('request_id')
         if request_id:
             db.plant_requests.delete_one({"_id": ObjectId(request_id)})
 
+
         return jsonify({"message": "Plant added successfully!"})
+
 
 
 @dashboard_bp.route('/edit_plant/<plant_id>', methods=['PUT'])

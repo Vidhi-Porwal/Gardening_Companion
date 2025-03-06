@@ -43,19 +43,34 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Select Garden Dropdown
+    // const gardenSelector = document.getElementById('gardenSelector');
+    // if (gardenSelector) {
+    //     gardenSelector.addEventListener('change', function () {
+    //         if (this.value === "add") {
+    //             var addGardenModal = new bootstrap.Modal(document.getElementById("addGardenModal"));
+    //             addGardenModal.show();
+    //             this.value = "";
+    //         } else {
+    //             const gardenForm = document.getElementById("gardenForm");
+    //             if (gardenForm) gardenForm.submit();
+    //         }
+    //     });
+    // }
     const gardenSelector = document.getElementById('gardenSelector');
-    if (gardenSelector) {
-        gardenSelector.addEventListener('change', function () {
-            if (this.value === "add") {
-                var addGardenModal = new bootstrap.Modal(document.getElementById("addGardenModal"));
-                addGardenModal.show();
-                this.value = "";
-            } else {
-                const gardenForm = document.getElementById("gardenForm");
-                if (gardenForm) gardenForm.submit();
-            }
-        });
-    }
+
+if (gardenSelector) {
+    gardenSelector.addEventListener('change', function () {
+        if (this.value === "add") {
+            var addGardenModal = new bootstrap.Modal(document.getElementById("addGardenModal"));
+            addGardenModal.show();
+            this.value = "";
+        } else {
+            document.getElementById("selectedGardenId").value = this.value;
+            document.getElementById("gardenForm").submit();
+        }
+    });
+}
+
 
     // Profile Edit
     const saveButton = document.getElementById('save-button');
@@ -85,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function filterPlants() {
-    let garden_id = document.getElementById("gardenSelect").value;
+    let garden_id = document.getElementById("gardenSelector").value;
     window.location.href = `/dashboard?garden_id=${garden_id}`;
 }
 
