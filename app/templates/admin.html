@@ -244,16 +244,16 @@
             </tbody>
         </table>
          <a href="{{ url_for('dashboard.pending_plants') }}" class="btn btn-warning">View Pending Plant Requests</a>
-        <form method='POST'action="{{ url_for('dashboard.add_plant') }}" style="max-width: 500px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-            <h2 style="text-align: center; ">Add a New Plant</h2>
-            <input type="text" id="commonName" placeholder="Common Name"name="commonName" required style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
-            <input type="text" id="scientificName" placeholder="Scientific Name"name="scientificName" required style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
-            <input type="text" id="rank" placeholder="Rank" name="rank" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
-            <input type="text" id="familyCommonName" name="familyCommonName" placeholder="Family Common Name" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
-            <input type="text" id="genus" placeholder="Genus" name="genus" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
-            <input type="text" id="imageURL" placeholder="Image URL" name="imageURL" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
-            <label style="display: flex; align-items: center; margin: 5px 0;"><input type="checkbox" name="edible" id="edible"> Edible</label>
-            <textarea id="saplingDescription" name="saplingDescription " placeholder="Sapling Description" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; height: 80px;"></textarea>
+         <form onsubmit="event.preventDefault(); addPlant();" style="max-width: 500px; margin: auto; padding: 20px; background: #f9f9f9; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+            <h2 style="text-align: center;">Add a New Plant</h2>
+            <input type="text" id="commonName" placeholder="Common Name" required style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="text" id="scientificName" placeholder="Scientific Name" required style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="text" id="rank" placeholder="Rank" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="text" id="familyCommonName" placeholder="Family Common Name" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="text" id="genus" placeholder="Genus" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="text" id="imageURL" placeholder="Image URL" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+            <label style="display: flex; align-items: center; margin: 5px 0;"><input type="checkbox" id="edible"> Edible</label>
+            <textarea id="saplingDescription" placeholder="Sapling Description" style="width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; height: 80px;"></textarea>
             <button type="submit" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Add Plant</button>
         </form>
         <div id="editPlantModal" class="modal">
@@ -299,7 +299,7 @@ window.onload = function() {
     document.getElementById('saplingDescription').value = urlParams.get('saplingDescription') || '';
 };
 
-// Function to add a plant
+
 function addPlant() {
     const urlParams = new URLSearchParams(window.location.search);
     const requestId = urlParams.get('request_id'); // Get request_id from URL
