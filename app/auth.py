@@ -31,7 +31,7 @@ auth = Blueprint('auth', __name__)
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#_]{8,}$'  # At least 8 characters, 1 letter, and 1 number
 PHONE_REGEX = r'^\+?[0-9]{10,15}$'
-
+USERNAME_REGEX = r'^[A-Za-z][A-Za-z0-9_]{7,29}$'
 
 
 # Set up insecure transport for development (remove in production)
@@ -266,6 +266,8 @@ def signup():
             flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
         elif not re.match(PHONE_REGEX, phone_no):
             flash('Invalid phone number.', 'danger')
+        elif not re.match(USERNAME_REGEX, username)
+            flash('Invalid username.', 'danger')
         else:
             db = current_app.config['DB_CONNECTION']
             if User.find_by_email(db, email):
