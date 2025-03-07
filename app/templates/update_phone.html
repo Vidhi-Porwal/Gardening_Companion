@@ -7,7 +7,8 @@
     <h2>Update Your Phone Number</h2>
     <form method="POST">
         <label for="phone_no">Phone Number:</label>
-        <input type="text" name="phone_no" required>
+        <input type="text" name="phone_no" required pattern="^[6-9]\d{9}$" title="Enter a valid 10-digit phone number starting with 6, 7, 8, or 9">
+
         <button type="submit">Save</button>
     </form>
 </body>
