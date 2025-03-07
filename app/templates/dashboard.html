@@ -68,6 +68,7 @@
             <select id="gardenSelector" name="garden_id" class="form-select d-inline-block w-auto">
                 {% for garden in user_garden %}
                     <option value="{{ garden['_id'] }}" 
+
                         {% if garden_id and garden['_id']|string == garden_id|string %} selected {% endif %}>
                         {{ garden["gardenName"] }}
                     </option>
@@ -75,7 +76,7 @@
                 <option value="add">+ Add New Garden</option>
             </select>
         </div>
-        
+      
         
         <!-- Hidden form to persist garden selection -->
         <form id="gardenForm" action="{{ url_for('dashboard.dashboard') }}" method="get">
