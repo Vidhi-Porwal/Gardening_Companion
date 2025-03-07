@@ -345,7 +345,9 @@ def add_garden():
     db = current_app.config['DB_CONNECTION']
 
     if garden_name and user_id:
+        
         db.garden.insert_one({
+
             "gardenName": garden_name,
             "user_id": ObjectId(user_id),
             "created_at": datetime.now()
@@ -510,7 +512,7 @@ def admin_dashboard():
 def delete_plant(plant_id):
     db = current_app.config['DB_CONNECTION']
     print("Deleting plant:", plant_id)
-    db.plants.delete_one({"_id": ObjectId(plant_id)})  # ✅ Fix: Convert to ObjectId
+    db.plants.delete_one({"_id": ObjectId(plant_id)})  #  Fix: Convert to ObjectId
     print("Deleting plant:", plant_id)
 
     users = list(db.users.find({}, {"_id": 1, "full_name": 1, "username": 1, "email": 1, "phone_no": 1, "status": 1, "role": 1}))
@@ -537,7 +539,7 @@ def update_user_role(user_id):
     new_role = data.get("role", "")
     print(new_role)
     db = current_app.config['DB_CONNECTION']
-    db.users.update_one({"_id": ObjectId(user_id)}, {"$set": {"role": new_role}})  # ✅ Fix: Convert to ObjectId
+    db.users.update_one({"_id"  : ObjectId(user_id)}, {"$set": {"role": new_role}})  # ✅ Fix: Convert to ObjectId
     return jsonify({"message": "User role updated successfully!"})
 
 
