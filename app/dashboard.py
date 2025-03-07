@@ -346,14 +346,21 @@ def add_garden():
 
     if garden_name and user_id:
         
-        db.garden.insert_one({
+        result=db.garden.insert_one({
 
             "gardenName": garden_name,
             "user_id": ObjectId(user_id),
             "created_at": datetime.now()
         })
+        new_garden_id=str(result.inserted_id)  #convert to string 
         flash("Garden added successfully!")
+        return redirect(url_for("dashboard.dashboard",garden_id=new_garden_id))
     return redirect(url_for("dashboard.dashboard"))
+
+
+        
+       
+
 
 def ensure_default_garden(user_id):
     db = current_app.config['DB_CONNECTION']
