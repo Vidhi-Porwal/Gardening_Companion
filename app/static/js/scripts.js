@@ -69,6 +69,7 @@ if (gardenSelector) {
             document.getElementById("gardenForm").submit();
         }
     });
+
 }
 
 
@@ -103,7 +104,6 @@ function filterPlants() {
     let garden_id = document.getElementById("gardenSelector").value;
     window.location.href = `/dashboard?garden_id=${garden_id}`;
 }
-
 
 document.addEventListener("DOMContentLoaded", function () {
     const plantDropdownButton = document.getElementById("plantDropdownButton");
@@ -159,3 +159,43 @@ document.addEventListener("DOMContentLoaded", function () {
         plantDropdownMenu.classList.remove("show");
     });
 });
+function deleteSelectedGarden(){
+    let gardenSelector = document.getElementById("gardenSelector");
+    let selectedGardenId=gardenSelector.value;
+    if(selectedGardenId==="add"){
+        alert("please select a valid garden to delete")
+        return;
+    }
+    if(confirm("Are you sure you want to delete this garden?")){
+        fetch(`/dashboard/delete_garden/${selectedGardenId}`,{
+            method:"DELETE",
+            headers:{
+                "Content-Type":"application/json"
+            }
+        })
+        .then(response=> response.json())
+        .then(data=>{
+            if(data.success){
+                alert("Garden deleted Successfully!");
+                let optiontoRemove=gardenSelector.querySelector(`option[value="${selectedGardenId}"]`)
+                if (optiontoRemove){
+                    optiontoRemove.remove();
+                }
+                if(gardenSelector.options.length>1){
+                    gardenSelector.value=gardenSelector.options[0].value;
+                    window.location.href=`/dashboard?garden_id=${gardenSelector.value}`;
+                }
+                else{
+                    window.location.href=`/dashboard`;
+                }
+            }
+            else{
+                alert("Error deleting Garden"+data.message);
+            }
+        })
+        .catch(error=>{
+            console.error("Error", error);
+            alert("Something Went wrong. Try again")
+        });
+    }
+}
