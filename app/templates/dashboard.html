@@ -127,7 +127,7 @@
                      data-genus="{{ plant.genus }}" 
                      data-edible="{{ 'Yes' if plant.edible else 'No' }}" 
                      data-sapling-description="{{ plant.saplingDescription }}" 
-                      
+                     data-ageid="{{ plant.age_id}}"
                      data-image-url="{{ plant.imageURL if plant.imageURL else url_for('static', filename='images/default_plant.jpg') }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ plant.commonName }}</h5>
@@ -189,6 +189,7 @@
                 <!-- Remove Plant Button inside Modal -->
                 <form method="POST" action="{{ url_for('dashboard.dashboard') }}">
                     <input type="hidden" id="modalPlantId" name="plant_id" value="">
+                    <input type="hidden"  id= "modalAgeId"name="age_id" value="">
                     <button type="submit" name="remove_plant" class="btn btn-danger">Remove</button>
                 </form>
             </div>
