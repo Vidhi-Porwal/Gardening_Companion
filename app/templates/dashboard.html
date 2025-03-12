@@ -260,7 +260,8 @@
 
 <div id="chatbot-container" class="chatbot-container">
     <!-- Chatbot Toggle Button -->
-    <form method="POST" action="{{ url_for('dashboard.chatbot_toggle') }}">
+    <form method="POST" action="{{ url_for('dashboard.chatbot_toggle',garden_id=garden_id) }}">
+        <input type="hidden" name="garden_id" id="hidden-garden-id" value="{{ garden_id }}">
         <button class="chatbot-toggle-btn">
             <i class="fa-solid fa-comments"></i>
         </button>
@@ -319,8 +320,9 @@
                 {% endif %}
             </div>
             <div class="card-footer bg-light">
-                <form method="POST" action="{{ url_for('dashboard.chatbot') }}" class="mb-0" id="chat-form">
+                <form method="POST" action="{{ url_for('dashboard.chatbot', garden_id=garden_id) }}" class="mb-0" id="chat-form">
                     <div class="input-group">
+                        <input type="hidden" name="garden_id" value="{{ garden_id }}">
                         <input type="text" 
                                name="message" 
                                class="form-control" 

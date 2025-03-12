@@ -542,6 +542,32 @@ def ensure_default_garden(user_id):
     print(str(default_garden_id))
     return str(default_garden_id)  # Ensure it's a string for URL usage
 
+def get_user_plants(db, user_id, garden_id):
+    """Fetch the plants belonging to a specific user and garden from MongoDB"""
+    try:
+        print(f"Checking plants for User ID: {user_id} in Garden ID: {garden_id}")
+
+        garden_obj_id = ObjectId(garden_id)  # Convert garden_id to ObjectId
+        
+
+        # Query the garden_plant collection for user's plants in the selected garden
+        user_plants = list(db.garden_plant.find({"user_id": current_user.id, "garden_id": garden_obj_id}))
+
+        print("Query Result:", user_plants)
+        if not user_plants:
+            return "You haven't added any plants to this garden yet."
+
+        # Format response
+        response_text = "Here are your plants in this garden:\n\n"
+        for plant in user_plants:
+            response_text += (f"🌿 {plant['plant_common_name']} \n")
+                              
+        
+        return response_text
+
+    except Exception as e:
+        return f"Error retrieving plants: {str(e)}"
+
     
 
 # # Helper Function: Parse Gemini Response
@@ -602,8 +628,11 @@ def create_structured_prompt(user_input, chat_history):
     context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in chat_history[-15:]])  # Last 15 messages
     return base_prompt.format(context=context, question=user_input)
 
-def chatbot_response(prompt, chat_history):
+def chatbot_response(prompt, chat_history, user_id=None, garden_id=None, db=None):
     try:
+        # Detect if user is asking about their plants
+        if "my plant" in prompt.lower() or "list my plants" in prompt.lower():
+            return get_user_plants(db, user_id, garden_id)
         # Create structured prompt
         full_prompt = create_structured_prompt(prompt, chat_history)
         
@@ -654,15 +683,31 @@ def chatbot():
     
     if not user_message:
         return redirect(url_for('dashboard.dashboard'))
+
+    db = current_app.config['DB_CONNECTION']
+
+    # Fetch user's default or first garden from the database
+    garden_id = request.args.get("garden_id") or request.form.get("garden_id")
+    print('garden_id 000000000000000',garden_id)
+
+    if not garden_id:
+        # If no garden is selected, fallback to the first garden the user has
+        user_garden = db.garden.find_one({"user_id": ObjectId(current_user.id)}, {"_id": 1})
+        if not user_garden:
+            flash("You don't have any gardens. Please create one first.", "warning")
+            return redirect(url_for('dashboard.dashboard'))
+        garden_id = str(user_garden["_id"])  # Ensure it's a string for MongoDB queries
+
+    print(f"Chatbot loaded for Garden ID: {garden_id}")  
     
     # Add user message to history
     chat_session.add_message("User", user_message)
     
     # Generate and add bot response
-    response = chatbot_response(user_message, chat_session.chat_history)
+    response = chatbot_response(user_message, chat_session.chat_history,current_user.id, garden_id, db)
     chat_session.add_message("Plantie 🌼", response)
     
-    return redirect(url_for('dashboard.dashboard'))
+    return redirect(url_for('dashboard.dashboard',garden_id=garden_id))
 
 
 
