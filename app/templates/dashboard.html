@@ -135,7 +135,8 @@
                     <p class="card-text"><i class="fa-solid fa-water"></i> Watering Schedule: {{ plant.watering if plant.watering else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing Schedule: {{ plant.fertilizing if plant.fertilizing else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing type: {{ plant.fertilizer_type if plant.fertilizer_type else 'N/A' }} </p>
-                    <!-- <p class="card-text"><i class="fa-solid fa-seedling"></i> Sunlight {{ plant.sunlight if plant.sunlight else 'N/A' }} </p> -->
+                    <p class="card-text"><i class="fa-solid fa-seedling"></i> quantity: {{ plant.quantity }} </p> 
+                    <p class="card-text"><i class="fa-solid fa-seedling"></i> age: {{ plant.age }} </p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i>Sunlight: 
                         {% if plant.sunlight == 1 %}
                             Full Sunlight
@@ -147,8 +148,9 @@
                             N/A
                         {% endif %}
                     </p>
-                </div>
+                    
             </div>
+        </div>
         </div>
         {% endfor %}
     </div>
@@ -168,7 +170,7 @@
                 <button type="button" class="btn-close" name="show_plant" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <img id="plantImage" src="" alt="" class="img-fluid mb-3">
+                <img id="plantImage" src="" alt="" class="img-fluid w-100 mb-3" style="max-width: 700px;">
                 <h5 id="plantName"></h5>
                 <p><strong>Scientific Name:</strong> <span id="plantScientificName"> </span></p>
                 
