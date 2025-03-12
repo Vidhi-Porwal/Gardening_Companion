@@ -106,8 +106,7 @@ def dashboard():
 
         # Fetch age details from age collection
         age_ids = list(set([ObjectId(k[1]) for k in plant_details.keys()]))  # Unique age_ids
-        age_data = {str(age["_id"]): age["age"] for age in db.age.find({"_id": {"$in": age_ids}})}
-
+        age_data = {str(age["_id"]): {"age": age["age"], "age_id": str(age["_id"])} for age in db.age.find({"_id": {"$in": age_ids}})}
         # Merge data
         final_plants = []
         for plant in user_plants:
@@ -117,7 +116,9 @@ def dashboard():
                     plant_copy = plant.copy()
                     plant_copy["quantity"] = details["quantity"]
                     plant_copy["garden_id"] = details["garden_id"]
-                    plant_copy["age"] = age_data.get(details["age_id"], "Unknown")  # Fetch age
+                    age_info = age_data.get(details["age_id"], {"age": "Unknown", "age_id": details["age_id"]})
+                    plant_copy["age"] = age_info["age"]
+                    plant_copy["age_id"] = age_info["age_id"]  # Fetch age
                     final_plants.append(plant_copy)
         print(final_plants)
 
@@ -290,17 +291,45 @@ def dashboard():
                         flash(f"Error adding plant: {str(e)}", "danger")
 
                 return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
+            if 'remove_plant' in request.form:
+                    plant_id = ObjectId(request.form.get('plant_id'))
+                    age_id = ObjectId(request.form.get('age_id'))  # Age ID ko bhi lena hoga
+                    garden_id = ObjectId(garden_id)
+
+                    # Fetch current plant details
+                    plant_entry = db.garden_plant.find_one(
+                        {"user_id": current_user.id, "plant_id": plant_id, "garden_id": garden_id, "age_id": age_id}
+                    )
+
+                    if plant_entry:
+                        if plant_entry["quantity"] > 1:
+                            # Reduce quantity by 1 if more than 1 exists
+                            db.garden_plant.update_one(
+                                {"user_id": current_user.id, "plant_id": plant_id, "garden_id": garden_id, "age_id": age_id},
+                                {"$inc": {"quantity": -1}}
+                            )
+                            flash("Plant quantity decreased.", "success")
+                        else:
+                            # Remove entry if quantity is 1 (so it becomes 0)
+                            db.garden_plant.delete_one(
+                                {"user_id": current_user.id, "plant_id": plant_id, "garden_id": garden_id, "age_id": age_id}
+                            )
+                            flash("Plant removed completely.", "success")
+                    else:
+                        flash("Plant not found.", "danger")
+
+                    return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
 
             # Remove a plant from the selected garden
-            if 'remove_plant' in request.form:
-                plant_id = request.form.get('plant_id')
-                plant_id = ObjectId(plant_id)
+            # if 'remove_plant' in request.form:
+            #     plant_id = request.form.get('plant_id')
+            #     plant_id = ObjectId(plant_id)
                 
-                result = db.garden_plant.delete_one({"user_id": current_user.id, "plant_id": plant_id, "garden_id": ObjectId(garden_id)})
+            #     result = db.garden_plant.delete_one({"user_id": current_user.id, "plant_id": plant_id, "garden_id": ObjectId(garden_id),"age_id": age_id,})
                 
-                flash("Plant removed successfully." if result.deleted_count else "Failed to remove plant.", "success" if result.deleted_count else "danger")
-                return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
-
+            #     flash("Plant removed successfully." if result.deleted_count else "Failed to remove plant.", "success" if result.deleted_count else "danger")
+            #     return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
+              
         # Render Template with the selected garden's plant
         return render_template(
             'dashboard.html',
