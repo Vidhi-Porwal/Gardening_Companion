@@ -212,3 +212,18 @@ function deleteSelectedGarden(){
         });
     }
 }
+
+
+//chatbot loading button and send btn disable
+document.getElementById("chat-form").addEventListener("submit", function() {
+        let sendBtn = document.getElementById("send-btn");
+        let sendText = document.getElementById("send-text");
+        let spinner = document.getElementById("loading-spinner");
+        let inputField = document.getElementById("chat-input");
+
+        // Disable input and show the spinner
+        sendBtn.disabled = true;
+        inputField.disabled = false;
+        sendText.classList.add("d-none");  // Hide "Send" text
+        spinner.classList.remove("d-none");  // Show spinner
+    });
