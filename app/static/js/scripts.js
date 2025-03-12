@@ -60,6 +60,8 @@ if (plantImages.length > 0 && plantDetailsModal) {
             document.getElementById('plantSaplingDescription').innerHTML = extractSection(saplingData, 'SAPLING DESCRIPTION');
             document.getElementById('plantDescription').innerHTML = extractSection(saplingData, 'PLANT DESCRIPTION');
             document.getElementById('howToPlant').innerHTML = extractSection(saplingData, 'HOW TO PLANT A SAPLING');
+            document.getElementById('modalPlantId').value=image.getAttribute('data-id');
+            document.getElementById('modalAgeId').value=image.getAttribute('data-ageid');
 
             // Show the modal
             new bootstrap.Modal(plantDetailsModal).show();
