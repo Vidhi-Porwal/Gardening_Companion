@@ -24,38 +24,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Dashboard Modal
     const plantImages = document.querySelectorAll('.card-img-top');
-    const plantDetailsModal = document.getElementById('plantDetailsModal');
-    if (plantImages.length > 0 && plantDetailsModal) {
-        plantImages.forEach(image => {
-            image.addEventListener('click', () => {
-                document.getElementById('plantImage').src = image.getAttribute('data-image-url') || '/static/images/default_plant.jpg';
-                document.getElementById('plantName').textContent = image.getAttribute('data-name') || 'Unknown';
-                document.getElementById('plantScientificName').textContent = image.getAttribute('data-scientific-name') || 'N/A';
-                document.getElementById('plantRank').textContent = image.getAttribute('data-rank') || 'N/A';
-                document.getElementById('plantFamily').textContent = image.getAttribute('data-family') || 'N/A';
-                document.getElementById('plantGenus').textContent = image.getAttribute('data-genus') || 'N/A';
-                document.getElementById('plantEdible').textContent = image.getAttribute('data-edible') || 'N/A';
-                document.getElementById('plantSaplingDescription').textContent = image.getAttribute('data-sapling-description') || 'N/A';
-                document.getElementById('modalPlantId').value = image.getAttribute('data-id');
-                new bootstrap.Modal(plantDetailsModal).show();
-            });
-        });
-    }
+const plantDetailsModal = document.getElementById('plantDetailsModal');
 
-    // Select Garden Dropdown
-    // const gardenSelector = document.getElementById('gardenSelector');
-    // if (gardenSelector) {
-    //     gardenSelector.addEventListener('change', function () {
-    //         if (this.value === "add") {
-    //             var addGardenModal = new bootstrap.Modal(document.getElementById("addGardenModal"));
-    //             addGardenModal.show();
-    //             this.value = "";
-    //         } else {
-    //             const gardenForm = document.getElementById("gardenForm");
-    //             if (gardenForm) gardenForm.submit();
-    //         }
-    //     });
-    // }
+if (plantImages.length > 0 && plantDetailsModal) {
+    plantImages.forEach(image => {
+        image.addEventListener('click', () => {
+            document.getElementById('plantImage').src = image.getAttribute('data-image-url') || '/static/images/default_plant.jpg';
+            document.getElementById('plantName').textContent = image.getAttribute('data-name') || 'Unknown';
+            document.getElementById('plantScientificName').textContent = image.getAttribute('data-scientific-name') || 'N/A';
+            document.getElementById('plantRank').textContent = image.getAttribute('data-rank') || 'N/A';
+            document.getElementById('plantFamily').textContent = image.getAttribute('data-family') || 'N/A';
+            document.getElementById('plantGenus').textContent = image.getAttribute('data-genus') || 'N/A';
+            document.getElementById('plantEdible').textContent = image.getAttribute('data-edible') || 'N/A';
+
+            // Get sapling description data
+            const saplingData = image.getAttribute('data-sapling-description') || 'N/A';
+
+            // Function to extract specific sections
+            function extractSection(data, title) {
+                const regex = new RegExp(`### ${title}:(.*?)(?=###|$)`, 's');
+                const match = data.match(regex);
+                if (match) {
+                    let formattedText = match[1].trim();
+
+                    // Convert Markdown-style bold (**text**) to HTML bold (<strong>text</strong>)
+                    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                    // Convert new lines to HTML line breaks
+                    return formattedText.replace(/\n/g, '<br>');
+                }
+                return 'N/A';
+            }
+
+            // Display extracted sections with proper bold formatting
+            document.getElementById('plantSaplingDescription').innerHTML = extractSection(saplingData, 'SAPLING DESCRIPTION');
+            document.getElementById('plantDescription').innerHTML = extractSection(saplingData, 'PLANT DESCRIPTION');
+            document.getElementById('howToPlant').innerHTML = extractSection(saplingData, 'HOW TO PLANT A SAPLING');
+
+            // Show the modal
+            new bootstrap.Modal(plantDetailsModal).show();
+        });
+    });
+}
+
+
+
     const gardenSelector = document.getElementById('gardenSelector');
 
 if (gardenSelector) {
