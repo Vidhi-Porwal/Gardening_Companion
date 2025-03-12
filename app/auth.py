@@ -266,7 +266,7 @@ def signup():
             flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
         elif not re.match(PHONE_REGEX, phone_no):
             flash('Invalid phone number.', 'danger')
-        elif not re.match(USERNAME_REGEX, username)
+        elif not re.match(USERNAME_REGEX, username):
             flash('Invalid username.', 'danger')
         else:
             db = current_app.config['DB_CONNECTION']
