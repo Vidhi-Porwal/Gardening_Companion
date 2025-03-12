@@ -128,7 +128,8 @@ def dashboard():
             # When the user selects a different garden
             if 'select_garden' in request.form:
                 garden_id = request.form.get('garden_id') or default_garden_id
-                return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
+                print("select")
+                return redirect(url_for('dashboard.dashboard', garden_id=str(garden_obj_id)))
 
             # Add a plant to the selected garden
             # if 'add_plant' in request.form:
@@ -260,7 +261,7 @@ def dashboard():
                         existing_plant = db.garden_plant.find_one({
                             "user_id": current_user.id,
                             "plant_id": plant_id,
-                            "garden_id": ObjectId(garden_id),
+                            "garden_id": ObjectId(garden_obj_id),
                             "age_id": age_id
                         })
 
@@ -276,7 +277,7 @@ def dashboard():
                             db.garden_plant.insert_one({
                                 "user_id": current_user.id,
                                 "plant_id": plant_id,
-                                "garden_id": ObjectId(garden_id),
+                                "garden_id": ObjectId(garden_obj_id),
                                 "watering": data["watering"],
                                 "fertilizing": data["fertilizing"],
                                 "sunlight": data["sunlight"],
@@ -290,11 +291,11 @@ def dashboard():
                     except Exception as e:
                         flash(f"Error adding plant: {str(e)}", "danger")
 
-                return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
+                return redirect(url_for('dashboard.dashboard', garden_id=str(garden_obj_id)))
             if 'remove_plant' in request.form:
                     plant_id = ObjectId(request.form.get('plant_id'))
                     age_id = ObjectId(request.form.get('age_id'))  # Age ID ko bhi lena hoga
-                    garden_id = ObjectId(garden_id)
+                    garden_id = ObjectId(garden_obj_id)
 
                     # Fetch current plant details
                     plant_entry = db.garden_plant.find_one(
@@ -331,6 +332,8 @@ def dashboard():
             #     return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
               
         # Render Template with the selected garden's plant
+        print("abc")
+        print("garden obj id ",garden_obj_id)
         return render_template(
             'dashboard.html',
             user_plants=final_plants,
