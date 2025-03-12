@@ -63,18 +63,65 @@ def dashboard():
         except Exception as e:
             garden_obj_id=ObjectId(default_garden_id)
         user_plants = list(db.garden_plant.find({"user_id": current_user.id, "garden_id": garden_obj_id}))
-        user_plants_data = list(db.garden_plant.find({"user_id": current_user.id,"garden_id": garden_obj_id}, {"plant_id": 1, "_id": 0}))
+        user_plants_data = list(db.garden_plant.find({"user_id": current_user.id,"garden_id": garden_obj_id}, {"plant_id": 1, "_id": 0, "age_id": 1, "quantity": 1,}))
         print(user_plants)
         plant_ids = [entry["plant_id"] for entry in user_plants_data]
         
 #        Fetch full plant details from plants collection
         user_plants = list(db.plants.find({"_id": {"$in": plant_ids}}))
         plants = list(db.plants.find())
+        
          
         user = db.users.find_one({"_id": ObjectId(current_user.id)}, {"role": 1, "_id": 0})
         user_role = user["role"]
         age=list(db.age.find())
         gemini_response = None
+        # Step 1: Fetch quantity details from garden_plant
+        plant_details = {}
+        garden_plants = db.garden_plant.find(
+            {"user_id": current_user.id, "garden_id": garden_obj_id},
+            {"plant_id": 1, "garden_id": 1, "age_id": 1, "quantity": 1, "_id": 0}
+        )
+
+        for gp in garden_plants:
+            plant_id = str(gp["plant_id"])  # Convert to string
+            age_id = str(gp["age_id"])  # Convert age_id to string for key
+
+            key = (plant_id, age_id)  # Tuple as key to differentiate by age
+
+            if key in plant_details:
+                plant_details[key]["quantity"] += gp["quantity"]  # Increase quantity
+            else:
+                plant_details[key] = {
+                    "garden_id": gp["garden_id"],
+                    "age_id": age_id,
+                    "quantity": gp["quantity"]
+                }
+        user_plants = list(db.plants.find({"_id": {"$in": plant_ids}}))
+
+        # Step 3: Merge quantity data into user_plants
+                # Fetch plant details from plants collection
+        plant_ids = list(set([ObjectId(k[0]) for k in plant_details.keys()]))  # Unique plant_ids
+        user_plants = list(db.plants.find({"_id": {"$in": plant_ids}}))
+
+        # Fetch age details from age collection
+        age_ids = list(set([ObjectId(k[1]) for k in plant_details.keys()]))  # Unique age_ids
+        age_data = {str(age["_id"]): age["age"] for age in db.age.find({"_id": {"$in": age_ids}})}
+
+        # Merge data
+        final_plants = []
+        for plant in user_plants:
+            plant_id_str = str(plant["_id"])
+            for (pid, age_id), details in plant_details.items():
+                if pid == plant_id_str:
+                    plant_copy = plant.copy()
+                    plant_copy["quantity"] = details["quantity"]
+                    plant_copy["garden_id"] = details["garden_id"]
+                    plant_copy["age"] = age_data.get(details["age_id"], "Unknown")  # Fetch age
+                    final_plants.append(plant_copy)
+        print(final_plants)
+
+
         # Handle POST Requests
         if request.method == 'POST':
             # When the user selects a different garden
@@ -83,28 +130,100 @@ def dashboard():
                 return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
 
             # Add a plant to the selected garden
+            # if 'add_plant' in request.form:
+            #     if default_garden_id:
+            #         garden_id=default_garden_id
+            #     print("garden id", garden_id)
+            #     print("add_plant")
+            #     plant_id = request.form.get('plant_id')
+            #     plant_id = ObjectId(plant_id)
+            #     age_id=request.form.get('age_id')
+            #     print(age_id)
+            #     if plant_id:
+            #         print(plant_id)
+            #         try:
+            #             # Fetch plant information from the database
+            #             plant_info = db.plants.find_one({"_id": plant_id})
+            #             if not plant_info:
+            #                 flash("Plant not found in the database.", "warning")
+            #                 return redirect(url_for('dashboard.dashboard'))
+
+            #             plant_common_name = plant_info.get("commonName", "Unknown")
+            #             print(plant_common_name)
+
+            #             # Check if scheduling information already exists in the plant database
+            #             if all(key in plant_info for key in ["watering", "fertilizing", "sunlight", "fertilizer_type"]):
+            #                 data = {
+            #                     "watering": plant_info["watering"],
+            #                     "fertilizing": plant_info["fertilizing"],
+            #                     "sunlight": plant_info["sunlight"],
+            #                     "fertilizer_type": plant_info["fertilizer_type"]
+            #                 }
+            #             else:
+            #                 # Fetch scheduling details from Gemini API
+            #                 model = genai.GenerativeModel("gemini-1.5-flash")
+            #                 prompt = (f"Give me watering and fertilizing schedule for {plant_common_name}, "
+            #                         "I just want numbers like in how many days return only a number, "
+            #                         "also give me the amount of sunlight it needs. In sunlight, give: "
+            #                         "1 for full sunlight, 2 for partial sunlight, 3 for no sunlight. "
+            #                         "Also give me the type of fertilizer recommended. in watering and fertilizing also only give a number in output not a interval")
+
+            #                 response = model.generate_content(prompt)
+            #                 gemini_response = response.text
+            #                 print(gemini_response)
+            #                 # Parse and store the response
+            #                 data = parse_gemini_response(gemini_response)
+
+            #                 if data:
+            #                     # Update the plant document with scheduling details
+            #                     db.plants.update_one(
+            #                         {"_id": plant_id},
+            #                         {"$set": {
+            #                             "watering": data["watering"],
+            #                             "fertilizing": data["fertilizing"],
+            #                             "sunlight": data["sunlight"],
+            #                             "fertilizer_type": data["fertilizer_type"]
+            #                         }}
+            #                     )
+
+
+                        # Insert into garden_plant collection
+                #         db.garden_plant.insert_one({
+                #             "user_id": current_user.id,
+                #             "plant_id": plant_id,
+                #             "garden_id": ObjectId(garden_id),
+                #             "watering": data["watering"],
+                #             "fertilizing": data["fertilizing"],
+                #             "sunlight": data["sunlight"],
+                #             "fertilizer_type": data["fertilizer_type"],
+                #             "plant_common_name": plant_common_name,
+                #             "age_id":ObjectId(age_id)
+                #         })
+
+                #         flash(f"{plant_common_name} has been added to your garden!", "success")
+
+                #     except Exception as e:
+                #         flash(f"Error adding plant: {str(e)}", "danger")
+                # return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
             if 'add_plant' in request.form:
-                if default_garden_id:
-                    garden_id=default_garden_id
                 print("garden id", garden_id)
-                print("add_plant")
                 plant_id = request.form.get('plant_id')
                 plant_id = ObjectId(plant_id)
-                age_id=request.form.get('age_id')
-                print(age_id)
+                age_id = request.form.get('age_id')
+                age_id = ObjectId(age_id)
+
+
                 if plant_id:
-                    print(plant_id)
                     try:
                         # Fetch plant information from the database
                         plant_info = db.plants.find_one({"_id": plant_id})
                         if not plant_info:
                             flash("Plant not found in the database.", "warning")
-                            return redirect(url_for('dashboard.dashboard'))
+                            return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
 
                         plant_common_name = plant_info.get("commonName", "Unknown")
-                        print(plant_common_name)
 
-                        # Check if scheduling information already exists in the plant database
+                        # Check if scheduling information exists
                         if all(key in plant_info for key in ["watering", "fertilizing", "sunlight", "fertilizer_type"]):
                             data = {
                                 "watering": plant_info["watering"],
@@ -123,12 +242,9 @@ def dashboard():
 
                             response = model.generate_content(prompt)
                             gemini_response = response.text
-                            print(gemini_response)
-                            # Parse and store the response
                             data = parse_gemini_response(gemini_response)
 
                             if data:
-                                # Update the plant document with scheduling details
                                 db.plants.update_one(
                                     {"_id": plant_id},
                                     {"$set": {
@@ -139,23 +255,40 @@ def dashboard():
                                     }}
                                 )
 
-                        # Insert into garden_plant collection
-                        db.garden_plant.insert_one({
+                        # Check if plant already exists with same age_id
+                        existing_plant = db.garden_plant.find_one({
                             "user_id": current_user.id,
                             "plant_id": plant_id,
                             "garden_id": ObjectId(garden_id),
-                            "watering": data["watering"],
-                            "fertilizing": data["fertilizing"],
-                            "sunlight": data["sunlight"],
-                            "fertilizer_type": data["fertilizer_type"],
-                            "plant_common_name": plant_common_name,
-                            "age_id":ObjectId(age_id)
+                            "age_id": age_id
                         })
 
-                        flash(f"{plant_common_name} has been added to your garden!", "success")
+                        if existing_plant:
+                            # If plant exists, increment quantity
+                            db.garden_plant.update_one(
+                                {"_id": existing_plant["_id"]},
+                                {"$inc": {"quantity": 1}}
+                            )
+                            flash(f"Another {plant_common_name} has been added to your garden!", "success")
+                        else:
+                            # Otherwise, create a new entry with quantity 1
+                            db.garden_plant.insert_one({
+                                "user_id": current_user.id,
+                                "plant_id": plant_id,
+                                "garden_id": ObjectId(garden_id),
+                                "watering": data["watering"],
+                                "fertilizing": data["fertilizing"],
+                                "sunlight": data["sunlight"],
+                                "fertilizer_type": data["fertilizer_type"],
+                                "plant_common_name": plant_common_name,
+                                "age_id": age_id,
+                                "quantity": 1  # Start with quantity 1
+                            })
+                            flash(f"{plant_common_name} has been added to your garden!", "success")
 
                     except Exception as e:
                         flash(f"Error adding plant: {str(e)}", "danger")
+
                 return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
 
             # Remove a plant from the selected garden
@@ -171,7 +304,7 @@ def dashboard():
         # Render Template with the selected garden's plant
         return render_template(
             'dashboard.html',
-            user_plants=user_plants,
+            user_plants=final_plants,
             user_plants_data=user_plants_data,
             plants=plants,
             user_role=user_role,
