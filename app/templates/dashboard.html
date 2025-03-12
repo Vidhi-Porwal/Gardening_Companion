@@ -316,16 +316,17 @@
                 {% endif %}
             </div>
             <div class="card-footer bg-light">
-                <form method="POST" action="{{ url_for('dashboard.chatbot') }}" class="mb-0">
+                <form method="POST" action="{{ url_for('dashboard.chatbot') }}" class="mb-0" id="chat-form">
                     <div class="input-group">
                         <input type="text" 
                                name="message" 
                                class="form-control" 
                                placeholder="Type your message..." 
                                required 
-                               autocomplete="off">
-                        <button class="btn btn-success" type="submit">
-                            Send
+                               autocomplete="off" id="chat-input">
+                        <button class="btn btn-success" type="submit" id="send-btn">
+                             <span id="send-text">Send</span>
+                                <span id="loading-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                         </button>
                     </div>
                 </form>
