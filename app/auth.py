@@ -129,72 +129,6 @@ def oauth_callback():
 
 
 
-# @auth.route("/oauth_callback")
-# def oauth_callback():
-#     """Handle the callback after Google OAuth."""
-#     try:
-#         if not google.authorized:
-#             flash("Google authentication failed. Please try again.", "danger")
-#             return redirect(url_for("google.login"))
-
-#         resp = google.get("/oauth2/v2/userinfo")
-#         if not resp.ok:
-#             flash("Failed to fetch user info from Google.", "danger")
-#             return redirect(url_for("auth.login"))
-
-#         user_info = resp.json()
-#         print("User info:", user_info)
-
-#         db = current_app.config['DB_CONNECTION']
-#         email = user_info.get("email")
-
-#         if not email:
-#             flash("No email found in Google account. Please use a valid account.", "danger")
-#             return redirect(url_for("auth.login"))
-
-#         # Check if user already exists in MongoDB
-#         user = db.users.find_one({"email": email})
-
-#         if not user:
-#             # Automatically sign up new users without a phone number
-#             user_id = db.users.insert_one({
-#                 "email": email,
-#                 "username": user_info.get("name"),
-#                 "profile_pic": user_info.get("picture"),
-#                 "phone_no": None,  # Phone number is initially empty
-#                 "role": "user"  # Default role
-#             }).inserted_id
-#         else:
-#             user_id = user["_id"]
-
-#         # Log the user in
-#         user_obj = User(
-#             id=str(user_id),
-#             email=email,
-#             username=user_info.get("name"),
-#             phone_no=user.get("phone_no")  # Get phone number if available
-#         )
-#         login_user(user_obj)
-
-#         # If phone number is missing, redirect to a page to ask for it
-#         if not user.get("phone_no"):
-#             flash("Please update your phone number.", "info")
-#             return redirect(url_for("auth.update_phone"))
-
-#         flash("Login successful!", "success")
-#         return redirect(url_for("dashboard.dashboard"))
-
-#     except pymongo.errors.PyMongoError as db_error:
-#         print(f"MongoDB Error: {db_error}")
-#         flash("Database error occurred. Please try again later.", "danger")
-#         return redirect(url_for("auth.login"))
-
-#     except Exception as e:
-#         print(f"Unexpected Error: {e}")
-#         flash("An unexpected error occurred. Please try again.", "danger")
-#         return redirect(url_for("auth.login"))
-
-
 @auth.route("/update_phone", methods=["GET", "POST"])
 @login_required
 def update_phone():
@@ -204,6 +138,10 @@ def update_phone():
         
         if not phone_no:
             flash("Phone number is required!", "danger")
+            return redirect(url_for("auth.update_phone"))
+
+        if not re.match(PHONE_REGEX, phone_no):
+            flash('Invalid phone number.', 'danger')
             return redirect(url_for("auth.update_phone"))
 
         db = current_app.config['DB_CONNECTION']
@@ -330,8 +268,8 @@ def reset_password(token):
         new_password = request.form["password"]
         confirm_password = request.form["confirm_password"]
 
-        if len(new_password) < 8:
-            flash("Password must be at least 8 characters long.", "danger")
+        if not re.match(password_pattern, new_password):
+            flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
             return redirect(url_for("auth.reset_password", token=token))
 
         if new_password != confirm_password:
