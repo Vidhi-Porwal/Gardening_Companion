@@ -44,7 +44,7 @@
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <div class="input-group">
-                        <input type="password" id="password" name="password" class="form-control" required placeholder="Create a password" minlength="8" >
+                        <input type="password" id="password" name="password" class="form-control" required placeholder="Create a password" minlength="8" maxlength="15">
                         <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('password')">Show</button>
                     </div>
                     <small class="form-text text-muted">Password must be at least 8 characters long and contain at least one letter and one number.</small>
@@ -52,7 +52,7 @@
                 <div class="mb-3">
                     <label for="confirm_password" class="form-label">Confirm Password</label>
                     <div class="input-group">
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Confirm your password" minlength="8">
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Confirm your password" minlength="8" maxlength="15">
                         <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('confirm_password')">Show</button>
                     </div>
                 </div>

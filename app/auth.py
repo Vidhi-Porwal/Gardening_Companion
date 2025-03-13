@@ -224,32 +224,39 @@ def login():
         password = request.form.get('password')
 
         if not identifier or not password:
-            flash('Please provide both identifier and password.', 'danger')
+            flash('Please provide both username/email/phone and password.', 'danger')
             return redirect(url_for('auth.login'))
 
         db = current_app.config['DB_CONNECTION']
         user = User.find_by_identifier(db, identifier)
 
-        if user and User.check_password(user, password):
-            user_obj = User(
-                id=str(user['_id']),
-                username=user['username'],
-                email=user['email'],
-                phone_no=user.get('phone_no'),
-                role=user.get('role', 'user')
-            )
-            login_user(user_obj)
-
-            # Redirect based on role
-            role_redirects = {
-                'admin': 'dashboard.dashboard',
-                'user': 'dashboard.dashboard'
-            }
-            return redirect(url_for(role_redirects.get(user_obj.role, 'dashboard.dashboard')))
-        else:
-            flash('Invalid credentials, please try again.', 'danger')
+        if not user:
+            flash('Username or email not found.', 'danger')  # Specific error for username/email
             return redirect(url_for('auth.login'))
+
+        if not User.check_password(user, password):
+            flash('Incorrect password. Please try again.', 'danger')  # Specific error for password
+            return redirect(url_for('auth.login'))
+
+        # Create user session
+        user_obj = User(
+            id=str(user['_id']),
+            username=user['username'],
+            email=user['email'],
+            phone_no=user.get('phone_no'),
+            role=user.get('role', 'user')
+        )
+        login_user(user_obj)
+
+        # Redirect based on role
+        role_redirects = {
+            'admin': 'dashboard.dashboard',
+            'user': 'dashboard.dashboard'
+        }
+        return redirect(url_for(role_redirects.get(user_obj.role, 'dashboard.dashboard')))
+
     return render_template('login.html')
+
 
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -323,9 +330,14 @@ def reset_password(token):
 
     if request.method == "POST":
         new_password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
 
         if len(new_password) < 8:
             flash("Password must be at least 8 characters long.", "danger")
+            return redirect(url_for("auth.reset_password", token=token))
+
+        if new_password != confirm_password:
+            flash("Passwords do not match. Please try again.", "danger")
             return redirect(url_for("auth.reset_password", token=token))
 
         hashed_password = generate_password_hash(new_password)  
@@ -335,7 +347,8 @@ def reset_password(token):
         flash("Your password has been updated! Please log in.", "success")
         return redirect(url_for("auth.login"))
 
-    return render_template("reset_password.html")
+    return render_template("reset_password.html", token=token)
+
     
 @auth.route('/logout')
 @login_required
