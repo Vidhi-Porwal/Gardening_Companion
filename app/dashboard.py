@@ -64,6 +64,7 @@ def dashboard():
             garden_obj_id=ObjectId(default_garden_id)
         user_plants = list(db.garden_plant.find({"user_id": current_user.id, "garden_id": garden_obj_id}))
         user_plants_data = list(db.garden_plant.find({"user_id": current_user.id,"garden_id": garden_obj_id}, {"plant_id": 1, "_id": 0, "age_id": 1, "quantity": 1,}))
+        print(user_plants)
         plant_ids = [entry["plant_id"] for entry in user_plants_data]
         
 #        Fetch full plant details from plants collection
@@ -119,7 +120,7 @@ def dashboard():
                     plant_copy["age"] = age_info["age"]
                     plant_copy["age_id"] = age_info["age_id"]  # Fetch age
                     final_plants.append(plant_copy)
-        
+        print(final_plants)
 
 
         # Handle POST Requests
@@ -501,13 +502,15 @@ def dashboard():
 @dashboard_bp.route("/add_garden", methods=["POST"])
 def add_garden():
     garden_name = request.form.get("garden_name")
+    user_id = current_user.id  # Replace with your user session ID retrieval
+
+    # Fetch the MongoDB connection from the current app context
     db = current_app.config['DB_CONNECTION']
-    user_id = current_user.id
-    print(user_id)  # Replace with your user session ID retrieval
-    
+
     if garden_name and user_id:
         
         result=db.garden.insert_one({
+
             "gardenName": garden_name,
             "user_id": ObjectId(user_id),
             "created_at": datetime.now()
@@ -516,6 +519,7 @@ def add_garden():
         flash("Garden added successfully!")
         return redirect(url_for("dashboard.dashboard",garden_id=new_garden_id))
     return redirect(url_for("dashboard.dashboard"))
+
 
         
        
