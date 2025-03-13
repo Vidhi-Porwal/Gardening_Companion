@@ -52,6 +52,8 @@ def dashboard():
         print("Extracted garden_id:", garden_id)
         #list of user garden
         id_current_user = ObjectId(current_user.id)
+        user_id = ObjectId(current_user.id)
+        chat_session = ChatSession(user_id)
         user_garden = list(db.garden.find({"user_id": id_current_user},{"gardenName":1}))
 
         if not garden_id and user_garden:
@@ -350,15 +352,53 @@ def parse_gemini_response(response_text):
 
 model = genai.GenerativeModel("gemini-1.5-flash")
 
+# Add the missing methods to ChatSession class
 class ChatSession:
-    def __init__(self):
-        self.chat_history = []
-        self.is_open = False
+    def __init__(self, user_id):
+        self.user_id = ObjectId(user_id)  # Ensure user_id is an ObjectId
+        self.chat_data = self.load_chat_data()
+        self.chat_history = self.load_chat_history()
+        self.is_open = self.chat_data.get("is_open", False) 
+
+    def load_chat_data(self):
+        db = current_app.config['DB_CONNECTION']
+        chat_data = db.chat_data.find_one({"user_id": self.user_id})
+        return chat_data if chat_data else {"is_open": False}
+
+    def save_chat_data(self):
+        db = current_app.config['DB_CONNECTION']
+        db.chat_data.update_one(
+            {"user_id": self.user_id},
+            {"$set": {"is_open": self.is_open}},
+            upsert=True
+        )
+
+    def load_chat_history(self):
+        db = current_app.config['DB_CONNECTION']
+        chat_history = db.chat_history.find_one({"user_id": self.user_id})
+        return chat_history["history"] if chat_history else []
+
+    def save_chat_history(self):
+        db = current_app.config['DB_CONNECTION']
+        db.chat_history.update_one(
+            {"user_id": self.user_id},
+            {"$set": {"history": self.chat_history}},
+            upsert=True
+        )
 
     def add_message(self, role, content):
         self.chat_history.append({"role": role, "content": content})
+        self.save_chat_history()
 
-chat_session = ChatSession()
+    def clear_chat_history(self):
+        self.chat_history = []
+        self.save_chat_history()
+        
+    def toggle_chat(self):
+        self.is_open = not self.is_open  # Toggle chatbot open state
+        self.save_chat_data()
+
+# chat_session = ChatSession(current_user.id)
 
 def create_structured_prompt(user_input, chat_history):
     # Create a more specific prompt structure
@@ -424,19 +464,17 @@ def chatbot_response(prompt, chat_history, user_id=None, garden_id=None, db=None
 @dashboard_bp.route('/chatbot_toggle', methods=['POST'])
 @login_required
 def chatbot_toggle():
-    chat_session.is_open = not chat_session.is_open
-    print("Chatbot state:", chat_session.is_open)
-    print("00000000000000")
-    return redirect(url_for('dashboard.dashboard')) 
-
-@dashboard_bp.route('/hey', methods=['POST'])
-def hey():
-    return redirect('dashboard.dashboard')
-
+    user_id = current_user.get_id()
+    chat_session = ChatSession(user_id)
+    chat_session.toggle_chat()  # Toggle chatbot state and save it
+    return redirect(url_for('dashboard.dashboard'))
 
 @dashboard_bp.route('/chatbot', methods=['POST'])
 @login_required
 def chatbot():
+    user_id = ObjectId(current_user.id)  # Convert to ObjectId
+    chat_session = ChatSession(user_id)
+    
     user_message = request.form.get("message", "").strip()
     
     if not user_message:
@@ -444,32 +482,21 @@ def chatbot():
 
     db = current_app.config['DB_CONNECTION']
 
-    # Fetch user's default or first garden from the database
     garden_id = request.args.get("garden_id") or request.form.get("garden_id")
-    print('garden_id 000000000000000',garden_id)
-
+    
     if not garden_id:
-        # If no garden is selected, fallback to the first garden the user has
-        user_garden = db.garden.find_one({"user_id": ObjectId(current_user.id)}, {"_id": 1})
+        user_garden = db.garden.find_one({"user_id": user_id}, {"_id": 1})
         if not user_garden:
             flash("You don't have any gardens. Please create one first.", "warning")
             return redirect(url_for('dashboard.dashboard'))
-        garden_id = str(user_garden["_id"])  # Ensure it's a string for MongoDB queries
+        garden_id = str(user_garden["_id"])
 
-    print(f"Chatbot loaded for Garden ID: {garden_id}")  
-    
-    # Add user message to history
     chat_session.add_message("User", user_message)
     
-    # Generate and add bot response
-    response = chatbot_response(user_message, chat_session.chat_history,current_user.id, garden_id, db)
+    response = chatbot_response(user_message, chat_session.chat_history, user_id, garden_id, db)
     chat_session.add_message("Plantie 🌼", response)
     
-    return redirect(url_for('dashboard.dashboard',garden_id=garden_id))
-
-
-
-
+    return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
 # Route to render admin dashboard
 @dashboard_bp.route("/admin", methods=["POST","GET"])
 def admin_dashboard():
