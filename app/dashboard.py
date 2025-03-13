@@ -53,7 +53,7 @@ def dashboard():
         print("Extracted garden_id:", garden_id)
         #list of user garden
         id_current_user = ObjectId(current_user.id)
-        user_garden = list(db.garden.find({"user_id": id_current_user}))
+        user_garden = list(db.garden.find({"user_id": id_current_user},{"gardenName":1}))
 
         if not garden_id and user_garden:
             print("first",str(user_garden[0]['_id']))
