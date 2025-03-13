@@ -268,7 +268,7 @@ def reset_password(token):
         new_password = request.form["password"]
         confirm_password = request.form["confirm_password"]
 
-        if not re.match(password_pattern, new_password):
+        if not re.match(PASSWORD_REGEX, new_password):
             flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
             return redirect(url_for("auth.reset_password", token=token))
 
