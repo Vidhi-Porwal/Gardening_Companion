@@ -120,25 +120,36 @@ def oauth_callback():
         flash("An unexpected error occurred. Please try again.", "danger")
         return redirect(url_for("auth.login"))
 
+
 @auth.route("/update_phone", methods=["GET", "POST"])
 @login_required
 def update_phone():
-    """Allow users to update their phone number."""
+    """Allow users to update their phone number and full name."""
+    db = current_app.config['DB_CONNECTION']
+
     if request.method == "POST":
         phone_no = request.form.get("phone_no")
-        
+        full_name = request.form.get("full_name")  # Get full name from form
+
         if not phone_no:
             flash("Phone number is required!", "danger")
             return redirect(url_for("auth.update_phone"))
 
-        db = current_app.config['DB_CONNECTION']
-        db.users.update_one({"email": current_user.email}, {"$set": {"phone_no": phone_no}})
-        
-        flash("Phone number updated successfully!", "success")
+        if not re.match(PHONE_REGEX, phone_no):
+            flash("Invalid phone number. Must be a 10-digit number starting with 6-9.", "danger")
+            return redirect(url_for("auth.update_phone"))
+
+        if not full_name or len(full_name) < 3:
+            flash("Full name must be at least 3 characters long.", "danger")
+            return redirect(url_for("auth.update_phone"))
+
+        # Update user's phone number and full name in the database
+        db.users.update_one({"email": current_user.email}, {"$set": {"phone_no": phone_no, "full_name": full_name}})
+
+        flash("Profile updated successfully!", "success")
         return redirect(url_for("dashboard.dashboard"))
 
     return render_template("update_phone.html")
-
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -255,8 +266,8 @@ def reset_password(token):
         new_password = request.form["password"]
         confirm_password = request.form["confirm_password"]
 
-        if len(new_password) < 8:
-            flash("Password must be at least 8 characters long.", "danger")
+        if not re.match(PASSWORD_REGEX, new_password):
+            flash('Password must be at least 8 characters long and contain at least one letter and one number.', 'danger')
             return redirect(url_for("auth.reset_password", token=token))
 
         if new_password != confirm_password:

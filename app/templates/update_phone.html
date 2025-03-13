@@ -1,15 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Update Phone Number</title>
-</head>
-<body>
-    <h2>Update Your Phone Number</h2>
+{% extends "base.html" %}
+
+{% block title %}Update Profile - Gardening Companion{% endblock %}
+
+{% block content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div>
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <h2>Update Your Profile</h2>
     <form method="POST">
+        <label for="full_name">Full Name:</label>
+        <input type="text" name="full_name" id="full_name"  required minlength="3" maxlength="25" placeholder="Enter your full name" pattern="^[A-Za-z]+(?: [A-Za-z]+)?\s*$" title="Enter your first name or 'FirstName LastName' format, using only alphabets.">
+
         <label for="phone_no">Phone Number:</label>
-        <input type="text" name="phone_no" required pattern="^[6-9]\d{9}$" title="Enter a valid 10-digit phone number starting with 6, 7, 8, or 9">
+        <input type="text" name="phone_no" id="phone_no" required pattern="^[6-9]\d{9}$" title="Enter a valid 10-digit phone number starting with 6, 7, 8, or 9" maxlength="10" placeholder="Enter your phone number">
 
         <button type="submit">Save</button>
     </form>
-</body>
-</html>
+{% endblock %}
