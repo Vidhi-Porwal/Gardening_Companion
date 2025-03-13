@@ -1,4 +1,4 @@
-
+##auth.py
 import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required
@@ -19,8 +19,6 @@ from flask_mail import Message
 from . import mail
 
 from .utils import generate_reset_token,verify_reset_token
-
-
 
 
 
