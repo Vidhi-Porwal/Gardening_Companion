@@ -8,21 +8,14 @@ from flask_dance.consumer import oauth_error
 from authlib.integrations.flask_client import OAuthError  
 from .models import User  
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from datetime import datetime  
 import pymongo
 from flask_login import current_user
-
 import re
 from .models import User
 from flask_mail import Message
 from . import mail
-
 from .utils import generate_reset_token,verify_reset_token
-
-
-
-
 auth = Blueprint('auth', __name__)
 
 # Regular expressions for validation
@@ -126,7 +119,6 @@ def oauth_callback():
         print(f"Unexpected Error: {e}")
         flash("An unexpected error occurred. Please try again.", "danger")
         return redirect(url_for("auth.login"))
-
 
 
 @auth.route("/update_phone", methods=["GET", "POST"])

@@ -39,7 +39,7 @@ if (plantImages.length > 0 && plantDetailsModal) {
             document.getElementById('plantFamily').textContent = image.getAttribute('data-family') || 'N/A';
             document.getElementById('plantGenus').textContent = image.getAttribute('data-genus') || 'N/A';
             document.getElementById('plantEdible').textContent = image.getAttribute('data-edible') || 'N/A';
-
+            
             // Get sapling description data
             const saplingData = image.getAttribute('data-sapling-description') || 'N/A';
 
@@ -65,7 +65,7 @@ if (plantImages.length > 0 && plantDetailsModal) {
             document.getElementById('howToPlant').innerHTML = extractSection(saplingData, 'HOW TO PLANT A SAPLING');
             document.getElementById('modalPlantId').value=image.getAttribute('data-id');
             document.getElementById('modalAgeId').value=image.getAttribute('data-ageid');
-
+            
             // Show the modal
             new bootstrap.Modal(plantDetailsModal).show();
         });

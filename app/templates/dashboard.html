@@ -121,7 +121,6 @@
                      data-id="{{ plant._id }}" 
                      data-name="{{ plant.commonName }}" 
                      data-scientific-name="{{ plant.scientificName }}" 
-                      
                      data-rank="{{ plant.rank }}" 
                      data-family="{{ plant.familyCommonName }}" 
                      data-genus="{{ plant.genus }}" 
@@ -131,7 +130,6 @@
                      data-image-url="{{ plant.imageURL if plant.imageURL else url_for('static', filename='images/default_plant.jpg') }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ plant.commonName }}</h5>
-                    <!-- <p class="card-text"><i class="fa-solid fa-box"></i> Quantity: {{plant.imageURL}}</p> -->
                     <p class="card-text"><i class="fa-solid fa-water"></i> Watering Schedule: {{ plant.watering if plant.watering else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing Schedule: {{ plant.fertilizing if plant.fertilizing else 'N/A' }} days</p>
                     <p class="card-text"><i class="fa-solid fa-seedling"></i> Fertilizing type: {{ plant.fertilizer_type if plant.fertilizer_type else 'N/A' }} </p>
@@ -189,7 +187,8 @@
                 <!-- Remove Plant Button inside Modal -->
                 <form method="POST" action="{{ url_for('dashboard.dashboard') }}">
                     <input type="hidden" id="modalPlantId" name="plant_id" value="">
-                    <input type="hidden"  id= "modalAgeId"name="age_id" value="">
+                    <input type="hidden"  id= "modalAgeId" name="age_id" value="">
+                    <input type="hidden"  id= "modalGardenId" name="garden_id" value="{{ garden_id}}">
                     <button type="submit" name="remove_plant" class="btn btn-danger">Remove</button>
                 </form>
             </div>
