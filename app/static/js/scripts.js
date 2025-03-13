@@ -237,3 +237,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// user_profile
+document.addEventListener("DOMContentLoaded", function () {
+    const editButton = document.getElementById("edit-button");
+    const saveButton = document.getElementById("save-button");
+    const inputs = document.querySelectorAll("#profile-form input");
+
+    function toggleEdit() {
+        inputs.forEach(input => input.toggleAttribute("readonly"));
+        editButton.classList.toggle("d-none");
+        saveButton.classList.toggle("d-none");
+    }
+
+    if (editButton) {
+        editButton.addEventListener("click", toggleEdit);
+    }
+});
