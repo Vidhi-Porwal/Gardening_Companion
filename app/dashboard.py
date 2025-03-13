@@ -7,8 +7,7 @@ from bson.objectid import ObjectId
 from .models import User
 from datetime import datetime
 from flask import render_template, request, jsonify
-from pymongo import MongoClient
-import re
+
 
 # Initialize blueprint
 dashboard_bp = Blueprint('dashboard', __name__)
@@ -131,82 +130,6 @@ def dashboard():
                 print("select")
                 return redirect(url_for('dashboard.dashboard', garden_id=str(garden_obj_id)))
 
-            # Add a plant to the selected garden
-            # if 'add_plant' in request.form:
-            #     if default_garden_id:
-            #         garden_id=default_garden_id
-            #     print("garden id", garden_id)
-            #     print("add_plant")
-            #     plant_id = request.form.get('plant_id')
-            #     plant_id = ObjectId(plant_id)
-            #     age_id=request.form.get('age_id')
-            #     print(age_id)
-            #     if plant_id:
-            #         print(plant_id)
-            #         try:
-            #             # Fetch plant information from the database
-            #             plant_info = db.plants.find_one({"_id": plant_id})
-            #             if not plant_info:
-            #                 flash("Plant not found in the database.", "warning")
-            #                 return redirect(url_for('dashboard.dashboard'))
-
-            #             plant_common_name = plant_info.get("commonName", "Unknown")
-            #             print(plant_common_name)
-
-            #             # Check if scheduling information already exists in the plant database
-            #             if all(key in plant_info for key in ["watering", "fertilizing", "sunlight", "fertilizer_type"]):
-            #                 data = {
-            #                     "watering": plant_info["watering"],
-            #                     "fertilizing": plant_info["fertilizing"],
-            #                     "sunlight": plant_info["sunlight"],
-            #                     "fertilizer_type": plant_info["fertilizer_type"]
-            #                 }
-            #             else:
-            #                 # Fetch scheduling details from Gemini API
-            #                 model = genai.GenerativeModel("gemini-1.5-flash")
-            #                 prompt = (f"Give me watering and fertilizing schedule for {plant_common_name}, "
-            #                         "I just want numbers like in how many days return only a number, "
-            #                         "also give me the amount of sunlight it needs. In sunlight, give: "
-            #                         "1 for full sunlight, 2 for partial sunlight, 3 for no sunlight. "
-            #                         "Also give me the type of fertilizer recommended. in watering and fertilizing also only give a number in output not a interval")
-
-            #                 response = model.generate_content(prompt)
-            #                 gemini_response = response.text
-            #                 print(gemini_response)
-            #                 # Parse and store the response
-            #                 data = parse_gemini_response(gemini_response)
-
-            #                 if data:
-            #                     # Update the plant document with scheduling details
-            #                     db.plants.update_one(
-            #                         {"_id": plant_id},
-            #                         {"$set": {
-            #                             "watering": data["watering"],
-            #                             "fertilizing": data["fertilizing"],
-            #                             "sunlight": data["sunlight"],
-            #                             "fertilizer_type": data["fertilizer_type"]
-            #                         }}
-            #                     )
-
-
-                        # Insert into garden_plant collection
-                #         db.garden_plant.insert_one({
-                #             "user_id": current_user.id,
-                #             "plant_id": plant_id,
-                #             "garden_id": ObjectId(garden_id),
-                #             "watering": data["watering"],
-                #             "fertilizing": data["fertilizing"],
-                #             "sunlight": data["sunlight"],
-                #             "fertilizer_type": data["fertilizer_type"],
-                #             "plant_common_name": plant_common_name,
-                #             "age_id":ObjectId(age_id)
-                #         })
-
-                #         flash(f"{plant_common_name} has been added to your garden!", "success")
-
-                #     except Exception as e:
-                #         flash(f"Error adding plant: {str(e)}", "danger")
-                # return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
             if 'add_plant' in request.form:
                 print("garden id", garden_id)
                 plant_id = request.form.get('plant_id')
@@ -295,8 +218,8 @@ def dashboard():
             if 'remove_plant' in request.form:
                     plant_id = ObjectId(request.form.get('plant_id'))
                     age_id = ObjectId(request.form.get('age_id'))  # Age ID ko bhi lena hoga
-                    garden_id = ObjectId(garden_obj_id)
-
+                    garden_id = ObjectId(request.form.get('garden_id'))
+                    print("remove",garden_id)
                     # Fetch current plant details
                     plant_entry = db.garden_plant.find_one(
                         {"user_id": current_user.id, "plant_id": plant_id, "garden_id": garden_id, "age_id": age_id}
@@ -320,19 +243,7 @@ def dashboard():
                         flash("Plant not found.", "danger")
 
                     return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
-
-            # Remove a plant from the selected garden
-            # if 'remove_plant' in request.form:
-            #     plant_id = request.form.get('plant_id')
-            #     plant_id = ObjectId(plant_id)
-                
-            #     result = db.garden_plant.delete_one({"user_id": current_user.id, "plant_id": plant_id, "garden_id": ObjectId(garden_id),"age_id": age_id,})
-                
-            #     flash("Plant removed successfully." if result.deleted_count else "Failed to remove plant.", "success" if result.deleted_count else "danger")
-            #     return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
-              
         # Render Template with the selected garden's plant
-        print("abc")
         print("garden obj id ",garden_obj_id)
         return render_template(
             'dashboard.html',
@@ -350,154 +261,6 @@ def dashboard():
     except Exception as e:
         print(f"Error in dashboard: {e}")
         return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
-# def dashboard():
-#     try:
-#         db = current_app.config['DB_CONNECTION']
-        
-#         # Ensure default garden ID for new users
-#         default_garden_id = ensure_default_garden(current_user.id)
-        
-#         # Get garden_id from request or use default
-#         garden_id = request.form.get('garden_id') or request.args.get('garden_id')
-#         garden_id = garden_id or default_garden_id  # Fallback to default if not provided
-        
-#         print(f"Default Garden ID: {default_garden_id}")
-#         print(f"Selected Garden ID: {garden_id}")
-
-#         # Fetch user-specific data
-#         user_garden = list(db.garden.find({"user_id": ObjectId(current_user.id)}, {"gardenName": 1}))
-
-#         # If no garden_id is selected, use the first available garden
-#         if not garden_id and user_garden:
-#             garden_id = str(user_garden[0]['_id'])
-
-#         # Ensure garden_id is a valid ObjectId
-#         try:
-#             garden_object_id = ObjectId(garden_id)
-#         except Exception as e:
-#             garden_object_id = ObjectId(default_garden_id)
-
-#         # Fetch plants associated with the selected garden
-#         user_plants = list(db.garden_plant.find({"user_id": current_user.id, "garden_id": garden_object_id}))
-#         user_plants_data = list(db.garden_plant.find({"user_id": current_user.id, "garden_id": garden_object_id}, {"plant_id": 1, "_id": 0}))
-        
-#         # Fetch plant details
-#         plant_ids = [entry["plant_id"] for entry in user_plants_data]
-#         user_plants = list(db.plants.find({"_id": {"$in": plant_ids}}))
-#         plants = list(db.plants.find())
-        
-#         # Get user role
-#         user = db.users.find_one({"_id": ObjectId(current_user.id)}, {"role": 1, "_id": 0})
-#         user_role = user["role"]
-        
-#         gemini_response = None
-
-#         # Handle POST Requests
-#         if request.method == 'POST':
-#             if 'select_garden' in request.form:
-#                 garden_id = request.form.get('garden_id') or default_garden_id
-#                 return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
-
-#             if 'add_plant' in request.form:
-#                 plant_id = request.form.get('plant_id')
-#                 age_id = request.form.get('age_id')
-
-#                 if plant_id:
-#                     try:
-#                         plant_id = ObjectId(plant_id)
-#                         plant_info = db.plants.find_one({"_id": plant_id})
-                        
-#                         if not plant_info:
-#                             flash("Plant not found in the database.", "warning")
-#                             return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
-
-#                         plant_common_name = plant_info.get("commonName", "Unknown")
-
-#                         # Check if scheduling information exists
-#                         if all(key in plant_info for key in ["watering", "fertilizing", "sunlight", "fertilizer_type"]):
-#                             data = {
-#                                 "watering": plant_info["watering"],
-#                                 "fertilizing": plant_info["fertilizing"],
-#                                 "sunlight": plant_info["sunlight"],
-#                                 "fertilizer_type": plant_info["fertilizer_type"]
-#                             }
-#                         else:
-#                             # Generate schedule using Gemini API
-#                             model = genai.GenerativeModel("gemini-1.5-flash")
-#                             prompt = (f"Give me watering and fertilizing schedule for {plant_common_name}, "
-#                                       "return only a number for days, sunlight requirement (1: full, 2: partial, 3: none), "
-#                                       "and type of fertilizer recommended.")
-                            
-#                             response = model.generate_content(prompt)
-#                             gemini_response = response.text
-#                             data = parse_gemini_response(gemini_response)
-
-#                             if data:
-#                                 db.plants.update_one(
-#                                     {"_id": plant_id},
-#                                     {"$set": {
-#                                         "watering": data["watering"],
-#                                         "fertilizing": data["fertilizing"],
-#                                         "sunlight": data["sunlight"],
-#                                         "fertilizer_type": data["fertilizer_type"]
-#                                     }}
-#                                 )
-
-#                         # Insert plant into the selected garden
-#                         db.garden_plant.insert_one({
-#                             "user_id": current_user.id,
-#                             "plant_id": plant_id,
-#                             "garden_id": garden_object_id,
-#                             "watering": data["watering"],
-#                             "fertilizing": data["fertilizing"],
-#                             "sunlight": data["sunlight"],
-#                             "fertilizer_type": data["fertilizer_type"],
-#                             "plant_common_name": plant_common_name,
-#                             "age_id": ObjectId(age_id)
-#                         })
-
-#                         flash(f"{plant_common_name} has been added to your garden!", "success")
-
-#                     except Exception as e:
-#                         flash(f"Error adding plant: {str(e)}", "danger")
-
-#                 return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
-
-#             if 'remove_plant' in request.form:
-#                 plant_id = request.form.get('plant_id')
-
-#                 if plant_id:
-#                     plant_id = ObjectId(plant_id)
-#                     result = db.garden_plant.delete_one({
-#                         "user_id": current_user.id, 
-#                         "plant_id": plant_id, 
-#                         "garden_id": garden_object_id
-#                     })
-                    
-#                     flash("Plant removed successfully." if result.deleted_count else "Failed to remove plant.", "success" if result.deleted_count else "danger")
-
-#                 return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
-
-#         # Render template
-#         return render_template(
-#             'dashboard.html',
-#             user_plants=user_plants,
-#             user_plants_data=user_plants_data,
-#             plants=plants,
-#             user_role=user_role,
-#             user_garden=user_garden,
-#             selected_garden=str(garden_object_id),
-#             gemini_response=gemini_response,
-#             chatbot_open=chat_session.is_open,  
-#             chat_history=chat_session.chat_history,
-#             age=list(db.age.find()),
-#             garden_id=str(garden_object_id)
-#         )
-
-
-#     except Exception as e:
-#         print(f"Error in dashboard: {e}")
-#         return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
 
 @dashboard_bp.route("/add_garden", methods=["POST"])
 def add_garden():
@@ -506,7 +269,7 @@ def add_garden():
 
     # Fetch the MongoDB connection from the current app context
     db = current_app.config['DB_CONNECTION']
-
+    
     if garden_name and user_id:
         
         result=db.garden.insert_one({
@@ -519,11 +282,6 @@ def add_garden():
         flash("Garden added successfully!")
         return redirect(url_for("dashboard.dashboard",garden_id=new_garden_id))
     return redirect(url_for("dashboard.dashboard"))
-
-
-        
-       
-
 
 def ensure_default_garden(user_id):
     db = current_app.config['DB_CONNECTION']
@@ -757,29 +515,6 @@ def update_user_role(user_id):
     db.users.update_one({"_id"  : ObjectId(user_id)}, {"$set": {"role": new_role}})  # ✅ Fix: Convert to ObjectId
     return jsonify({"message": "User role updated successfully!"})
 
-
-
-# @dashboard_bp.route('/add_plant', methods=['GET','POST'])
-# @login_required
-# def add_plant():
-#     if current_user.role != 'admin':
-#         return redirect(url_for('dashboard.dashboard'))
-    
-#     db = current_app.config['DB_CONNECTION']
-#     data = request.json
-#     new_plant = {
-#         "commonName": data.get('commonName'),
-#         "scientificName": data.get('scientificName'),
-#         "rank": data.get('rank'),
-#         "familyCommonName": data.get('familyCommonName'),
-#         "genus": data.get('genus'),
-#         "imageURL": data.get('imageURL'),
-#         "edible": data.get('edible', False),
-#         "saplingDescription": data.get('saplingDescription')
-#     }
-    
-#     db.plants.insert_one(new_plant)  # MongoDB insertion
-#     return jsonify({"message": "Plant added successfully!"})
 @dashboard_bp.route('/add_plant', methods=['GET', 'POST'])
 @login_required
 def add_plant():
@@ -804,31 +539,6 @@ def add_plant():
 
         if not request.is_json:
             return jsonify({"error": "Invalid content type, expected JSON"}), 415  # Ensure JSON format
-    #     common_name = request.form.get("commonName")
-    #     scientificName = request.form.get("scientificName")
-    #     rank = request.form.get("rank")
-    #     familyCommonName = request.form.get("familyCommonName")
-    #     genus = request.form.get("genus")
-    #     imageURL=request.form.get('imageURL')
-    #     edible=request.form.get('edible')
-    #     saplingDescription=request.form.get('saplingDescription')
-    #     db.plants.insert_one({
-    #     "commonName": common_name,
-    #     "scientificName": scientificName,
-    #     "rank":rank ,
-    #     "familyCommonName": familyCommonName,
-    #     "genus": genus,
-    #     "imageURL": imageURL,
-    #     "edible": edible,
-    #     "saplingDescription": saplingDescription,
-
-    # })
-
-
-        
-        
-
-
         data = request.json  # Expecting JSON data
         new_plant = {
             "commonName": data.get('commonName'),
@@ -885,10 +595,6 @@ def get_plant(plant_id):
     plant["_id"] = str(plant["_id"])  # Convert ObjectId to string for JSON response
     return jsonify(plant)
 
-
-
-
-
 @dashboard_bp.route('/request_plant', methods=['GET', 'POST'])
 @login_required
 def request_plant():
@@ -940,27 +646,6 @@ def pending_plants():
         return redirect(url_for('dashboard.dashboard'))
 
     return render_template('pending_plants.html', pending_requests=pending_requests)
-
-# @dashboard_bp.route('/admin/approve_plant/<request_id>', methods=['POST'])
-# @login_required
-# def approve_plant(request_id):
-#     if current_user.role != "admin":
-#         flash("Unauthorized access!", "danger")
-#         return redirect(url_for('dashboard.dashboard'))
-
-#     db = current_app.config['DB_CONNECTION']
-#     plant_request = db.plant_requests.find_one({"_id": ObjectId(request_id)})
-
-#     if plant_request:
-#         # Move plant request to approved plants
-#         db.plants.insert_one({
-#             "commonName": plant_request["plantName"],
-#             "saplingDescription": plant_request["description"]
-#         })
-#         db.plant_requests.delete_one({"_id": ObjectId(request_id)})
-#         flash("Plant request approved!", "success")
-
-#     return redirect(url_for('dashboard.pending_plants'))
 
 @dashboard_bp.route('/admin/approve_plant/<request_id>', methods=['POST'])
 @login_required
