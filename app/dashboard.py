@@ -53,7 +53,7 @@ def dashboard():
         print("Extracted garden_id:", garden_id)
         #list of user garden
         id_current_user = ObjectId(current_user.id)
-        user_garden = list(db.garden.find({"user_id": id_current_user}, {"gardenName": 1}))
+        user_garden = list(db.garden.find({"user_id": id_current_user},{"gardenName":1}))
 
         if not garden_id and user_garden:
             print("first",str(user_garden[0]['_id']))
@@ -528,7 +528,7 @@ def add_garden():
 def ensure_default_garden(user_id):
     db = current_app.config['DB_CONNECTION']
     
-    default_garden = db.garden.find_one({"user_id": ObjectId(user_id), "gardenName": "My Garden"})
+    default_garden = db.garden.find_one({"user_id": ObjectId(user_id)})
     print(default_garden)
     if not default_garden:
         default_garden_id = db.garden.insert_one({
