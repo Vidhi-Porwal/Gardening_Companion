@@ -269,18 +269,30 @@ def add_garden():
 
     # Fetch the MongoDB connection from the current app context
     db = current_app.config['DB_CONNECTION']
-    
-    if garden_name and user_id:
-        
-        result=db.garden.insert_one({
+    user_garden = list(db.garden.find({"user_id": ObjectId(user_id)}, {"gardenName": 1, "_id": 0}))
 
-            "gardenName": garden_name,
-            "user_id": ObjectId(user_id),
-            "created_at": datetime.now()
-        })
-        new_garden_id=str(result.inserted_id)  #convert to string 
-        flash("Garden added successfully!")
-        return redirect(url_for("dashboard.dashboard",garden_id=new_garden_id))
+# Extract garden names from the list of dictionaries
+    existing_garden_names = [garden["gardenName"] for garden in user_garden]
+
+    print(garden_name)
+    print(existing_garden_names)
+
+    if garden_name in existing_garden_names:
+        flash("Error: Garden name already exists. Cannot add the same garden name.", "danger")
+        return redirect(url_for("dashboard.dashboard"))
+    else:
+
+        if garden_name and user_id:
+            
+            result=db.garden.insert_one({
+
+                "gardenName": garden_name,
+                "user_id": ObjectId(user_id),
+                "created_at": datetime.now()
+            })
+            new_garden_id=str(result.inserted_id)  #convert to string 
+            flash("Garden added successfully!")
+            return redirect(url_for("dashboard.dashboard",garden_id=new_garden_id))
     return redirect(url_for("dashboard.dashboard"))
 
 def ensure_default_garden(user_id):
