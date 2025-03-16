@@ -84,7 +84,8 @@ def oauth_callback():
                 "username": user_info.get("name"),
                 "profile_pic": user_info.get("picture"),
                 "phone_no": None,  # Phone number is initially empty
-                "role": "user"  # Default role
+                "role": "user",  # Default role
+                "status": "active" #Default status
             })
             user_id = inserted.inserted_id
             # Set phone_no to None for the new user.
