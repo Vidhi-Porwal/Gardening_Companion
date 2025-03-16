@@ -301,6 +301,18 @@ function editPlant(plantId) {
     .catch(error => console.error("Error:", error));
 }
 
+//flash message timeout
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+        let alerts = document.querySelectorAll(".alert");
+        alerts.forEach(function (alert) {
+            alert.classList.remove("show"); 
+            alert.classList.add("fade");
+            setTimeout(() => alert.remove(), 500); 
+        });
+    }, 5000);
+});
+
 
     </script>
 </body>
