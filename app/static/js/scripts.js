@@ -218,7 +218,7 @@ function deleteSelectedGarden(){
     }
 }
 
-
+//chatbot spinner
 document.addEventListener("DOMContentLoaded", function () {
     const chatForm = document.getElementById("chat-form");
     if (chatForm) {
@@ -252,4 +252,17 @@ document.addEventListener("DOMContentLoaded", function () {
     if (editButton) {
         editButton.addEventListener("click", toggleEdit);
     }
+});
+
+
+//flash message timeout
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+        let alerts = document.querySelectorAll(".alert");
+        alerts.forEach(function (alert) {
+            alert.classList.remove("show"); // Triggers Bootstrap fade-out
+            alert.classList.add("fade");
+            setTimeout(() => alert.remove(), 500); // Removes from DOM
+        });
+    }, 5000);
 });
