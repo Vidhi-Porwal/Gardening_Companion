@@ -124,6 +124,8 @@ function filterPlants() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    
+
     const plantDropdownButton = document.getElementById("plantDropdownButton");
     const plantDropdownMenu = document.getElementById("plantDropdownMenu");
     const plantSearch = document.getElementById("plantSearch");
@@ -266,3 +268,4 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }, 5000);
 });
+//admin js
