@@ -6,7 +6,7 @@ import os
 from bson import ObjectId
 from dotenv import load_dotenv
 from .models import User
-from flask_dance.contrib.google import make_google_blueprint
+# from flask_dance.contrib.google import make_google_blueprint
 from urllib.parse import quote_plus
 from flask_mail import Mail
 
