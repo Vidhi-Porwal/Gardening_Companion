@@ -19,7 +19,7 @@ from .utils import generate_reset_token,verify_reset_token
 auth = Blueprint('auth', __name__)
 
 # Regular expressions for validation
-EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+EMAIL_REGEX = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$' #Email regex
 PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#_]{8,}$'  # At least 8 characters, 1 letter, and 1 number
 PHONE_REGEX = r'^\+?[0-9]{10,15}$'
 USERNAME_REGEX = r'^[A-Za-z][A-Za-z0-9_]{4,29}$'
