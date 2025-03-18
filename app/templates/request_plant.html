@@ -34,10 +34,15 @@
 
         <form action="{{ url_for('dashboard.request_plant') }}" method="POST">
             <label for="plantName">Plant Name:</label>
-            <input type="text" id="plantName" name="plantName" required>
+            <input type="text" id="plantName" name="plantName" required 
+                   minlength="3" maxlength="25" pattern="[a-zA-Z0-9\s]+"
+                   title="Plant name must be between 3 and 50 characters and can only contain letters, numbers, and spaces.">
 
             <label for="plantDescription">Plant Description (Optional):</label>
-            <textarea id="plantDescription" name="plantDescription"></textarea>
+            <textarea id="plantDescription" name="plantDescription" 
+                      minlength="10" maxlength="500" pattern="^[a-zA-Z0-9\s,.;!?-]*$"
+                      title="Description can be between 10 and 500 characters and contain letters, numbers, and punctuation marks."></textarea>
+
 
             <button type="submit"> Request Plant</button>
         </form>
