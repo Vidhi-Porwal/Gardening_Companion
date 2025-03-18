@@ -33,6 +33,7 @@ def load_user(user_id):
             role=user.get('role', 'user')
         )
     return None
+    
 from dotenv import load_dotenv
 load_dotenv()
 def create_app():

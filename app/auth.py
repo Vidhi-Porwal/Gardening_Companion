@@ -193,6 +193,7 @@ def login():
         # Create user session
         user_obj = User(
             id=str(user['_id']),
+            full_name=['full_name'],
             username=user['username'],
             email=user['email'],
             phone_no=user.get('phone_no'),
