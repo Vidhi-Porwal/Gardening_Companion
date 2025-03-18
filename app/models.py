@@ -18,8 +18,9 @@ def get_db_collection(collection_name):
 # User Model
 class User(UserMixin):
 
-    def __init__(self, id, username, email, phone_no=None, role='user'):
+    def __init__(self, id, full_name, username, email, phone_no=None, role='user'):
         self.id = id
+        self.full_name= full_name
         self.username = username
         self.email = email
         self.phone_no = phone_no
