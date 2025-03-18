@@ -22,7 +22,7 @@ auth = Blueprint('auth', __name__)
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#_]{8,}$'  # At least 8 characters, 1 letter, and 1 number
 PHONE_REGEX = r'^\+?[0-9]{10,15}$'
-USERNAME_REGEX = r'^[A-Za-z][A-Za-z0-9_]{7,29}$'
+USERNAME_REGEX = r'^[A-Za-z][A-Za-z0-9_]{4,29}$'
 
 
 # Set up insecure transport for development (remove in production)
@@ -69,6 +69,7 @@ def oauth_callback():
 
         db = current_app.config['DB_CONNECTION']
         email = user_info.get("email")
+        full_name = user_info.get("name")  # Get full name from Google
 
         if not email:
             flash("No email found in Google account. Please use a valid account.", "danger")
@@ -78,32 +79,34 @@ def oauth_callback():
         user = db.users.find_one({"email": email})
 
         if not user:
-            # Automatically sign up new users without a phone number
+            # Automatically sign up new users
             inserted = db.users.insert_one({
                 "email": email,
-                "username": user_info.get("name"),
+                "full_name": full_name,  # Store full name
+                "username": user_info.get("name"),  # Use first name as username
                 "profile_pic": user_info.get("picture"),
                 "phone_no": None,  # Phone number is initially empty
                 "role": "user",  # Default role
-                "status": "active" #Default status
+                "status": "active"
             })
             user_id = inserted.inserted_id
-            # Set phone_no to None for the new user.
             phone_no = None
         else:
             user_id = user["_id"]
             phone_no = user.get("phone_no")
+            full_name = user.get("full_name", full_name)  # Keep stored full_name if available
 
         # Log the user in
         user_obj = User(
             id=str(user_id),
             email=email,
-            username=user_info.get("name"),
+            username=user_info.get("name"),  # Use first name
+            full_name=full_name,  # Add full name
             phone_no=phone_no
         )
         login_user(user_obj)
 
-        # If phone number is missing, redirect to a page to ask for it
+        # If phone number is missing, redirect to update profile
         if not phone_no:
             flash("Please update your phone number.", "info")
             return redirect(url_for("auth.update_phone"))
@@ -127,11 +130,21 @@ def oauth_callback():
 def update_phone():
     """Allow users to update their phone number and full name."""
     db = current_app.config['DB_CONNECTION']
+    user = db.users.find_one({"email": current_user.email})
 
     if request.method == "POST":
+        username = request.form.get("username")
         phone_no = request.form.get("phone_no")
         full_name = request.form.get("full_name")  # Get full name from form
 
+        if not username or not re.match(USERNAME_REGEX, username):
+            flash("Invalid username. It must start with a letter and contain only letters, numbers, and underscores, with a length of 5-18 characters.", "danger")
+            return redirect(url_for("auth.update_phone"))
+
+        if db.users.find_one({"username": username, "email": {"$ne": current_user.email}}):
+            flash("Username is already taken. Choose another.", "danger")
+            return redirect(url_for("auth.update_phone"))
+            
         if not phone_no:
             flash("Phone number is required!", "danger")
             return redirect(url_for("auth.update_phone"))
@@ -145,12 +158,12 @@ def update_phone():
             return redirect(url_for("auth.update_phone"))
 
         # Update user's phone number and full name in the database
-        db.users.update_one({"email": current_user.email}, {"$set": {"phone_no": phone_no, "full_name": full_name}})
+        db.users.update_one({"email": current_user.email}, {"$set": {"username": username,"phone_no": phone_no, "full_name": full_name}})
 
         flash("Profile updated successfully!", "success")
         return redirect(url_for("dashboard.dashboard"))
 
-    return render_template("update_phone.html")
+    return render_template("update_phone.html",user=user)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -209,7 +222,8 @@ def signup():
         elif not re.match(PHONE_REGEX, phone_no):
             flash('Invalid phone number.', 'danger')
         elif not re.match(USERNAME_REGEX, username):
-            flash('Invalid username.', 'danger')
+            flash("Invalid username. It must start with a letter and contain only letters, numbers, and underscores, with a length of 5-18 characters.", "danger")
+
         else:
             db = current_app.config['DB_CONNECTION']
             if User.find_by_email(db, email):
