@@ -234,6 +234,8 @@ def signup():
                 flash('Email is already registered.', 'danger')
             elif User.find_by_username(db, username):
                 flash('Username is already taken.', 'danger')
+            elif User.find_by_phone_no(db, phone_no):
+                flash('Phone number is already taken.', 'danger')
             else:
                 User.create_user(db, full_name, username, email, password, phone_no)
                 flash('Account created successfully! Please log in.', 'success')
