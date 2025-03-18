@@ -29,12 +29,12 @@
                     <div class="mb-3">
                         <label for="full_name" class="form-label">Full Name</label>
                         <input type="text" id="full_name" name="full_name" class="form-control" 
-                        value="{{ user.full_name }}" required pattern="[a-zA-Z\s]+" disabled>
+                        value="{{ user.full_name }}" required pattern="[a-zA-Z\s]+" disabled minlength="3" maxlength="30">
                     </div>
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" id="username" name="username" class="form-control" 
-                        value="{{ user.username }}" required pattern="^[a-zA-Z0-9_]{3,20}$" 
+                        value="{{ user.username }}" required pattern="^[a-zA-Z0-9_]{3,20}$" minlength="3" maxlength="20"
                         title="Username must be 3-20 characters long and can only contain letters, numbers, or underscores." disabled>
                     </div>
                     <div class="mb-3">
@@ -45,7 +45,7 @@
                     <div class="mb-3">
                         <label for="phone_no" class="form-label">Phone Number</label>
                         <input type="text" id="phone_no" name="phone_no" class="form-control" 
-                        value="{{ user.phone_no }}" disabled>
+                        value="{{ user.phone_no }}" minlength="10" maxlength="12" disabled>
                     </div>
                 </div>
 
