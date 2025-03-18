@@ -18,9 +18,12 @@ def get_db_collection(collection_name):
 # User Model
 class User(UserMixin):
 
+ 
+
     def __init__(self, full_name, id, username, email, phone_no=None, role='user'):
         self.id = id
         self.full_name = full_name
+
         self.username = username
         self.email = email
         self.phone_no = phone_no
@@ -46,6 +49,11 @@ class User(UserMixin):
     def find_by_username(db, username):
         """Find a user by username."""
         return db.users.find_one({"username": username})
+
+    @staticmethod
+    def find_by_phone_no(db, phone_no):
+        """Find a user by username."""
+        return db.users.find_one({"phone_no": phone_no})
 
     @staticmethod
     def create_user(db, full_name, username, email, password, phone_no, role='user', status='active'):
