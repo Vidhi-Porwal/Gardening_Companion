@@ -22,7 +22,7 @@ auth = Blueprint('auth', __name__)
 EMAIL_REGEX = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
 PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@#_]{8,}$'  # At least 8 characters, 1 letter, and 1 number
 PHONE_REGEX = r'^\+?[0-9]{10,15}$'
-USERNAME_REGEX = r'^[A-Za-z][A-Za-z0-9_]{7,29}$'
+USERNAME_REGEX = r'^[A-Za-z][A-Za-z0-9_]{4,29}$'
 
 
 # Set up insecure transport for development (remove in production)
@@ -176,6 +176,7 @@ def login():
         # Create user session
         user_obj = User(
             id=str(user['_id']),
+            full_name=['full_name'],
             username=user['username'],
             email=user['email'],
             phone_no=user.get('phone_no'),

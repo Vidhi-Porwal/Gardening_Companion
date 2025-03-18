@@ -26,12 +26,14 @@ def load_user(user_id):
     if user:
         return User(
             id=str(user['_id']),
+            full_name=user['full_name'],
             username=user['username'],
             email=user['email'],
             phone_no=user.get('phone_no'),
             role=user.get('role', 'user')
         )
     return None
+    
 from dotenv import load_dotenv
 load_dotenv()
 def create_app():
