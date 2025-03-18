@@ -48,6 +48,11 @@ class User(UserMixin):
         return db.users.find_one({"username": username})
 
     @staticmethod
+    def find_by_phone_no(db, phone_no):
+        """Find a user by username."""
+        return db.users.find_one({"phone_no": phone_no})
+
+    @staticmethod
     def create_user(db, full_name, username, email, password, phone_no, role='user', status='active'):
         """Create a new user in the database."""
         hashed_password = generate_password_hash(password)
