@@ -144,13 +144,17 @@ def update_phone():
         if db.users.find_one({"username": username, "email": {"$ne": current_user.email}}):
             flash("Username is already taken. Choose another.", "danger")
             return redirect(url_for("auth.update_phone"))
-            
+
         if not phone_no:
             flash("Phone number is required!", "danger")
             return redirect(url_for("auth.update_phone"))
 
         if not re.match(PHONE_REGEX, phone_no):
             flash("Invalid phone number. Must be a 10-digit number starting with 6-9.", "danger")
+            return redirect(url_for("auth.update_phone"))
+
+        if db.users.find_one({"phone_no": phone_no, "email": {"$ne": current_user.email}}):
+            flash("Phone number is already in use. Choose another.", "danger")
             return redirect(url_for("auth.update_phone"))
 
         if not full_name or len(full_name) < 3:
