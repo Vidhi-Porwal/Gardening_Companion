@@ -48,8 +48,8 @@ def dashboard():
         default_garden_id = ensure_default_garden(current_user.id)
         garden_id = request.form.get('garden_id') or request.args.get('garden_id')
         garden_id = garden_id or default_garden_id  # Handle invalid format
-        print("default",default_garden_id)
-        print("Extracted garden_id:", garden_id)
+        # print("default",default_garden_id)
+        # print("Extracted garden_id:", garden_id)
         #list of user garden
         id_current_user = ObjectId(current_user.id)
         user_id = ObjectId(current_user.id)
@@ -65,7 +65,7 @@ def dashboard():
             garden_obj_id=ObjectId(default_garden_id)
         user_plants = list(db.garden_plant.find({"user_id": current_user.id, "garden_id": garden_obj_id}))
         user_plants_data = list(db.garden_plant.find({"user_id": current_user.id,"garden_id": garden_obj_id}, {"plant_id": 1, "_id": 0, "age_id": 1, "quantity": 1,}))
-        print(user_plants)
+        # print(user_plants)
         plant_ids = [entry["plant_id"] for entry in user_plants_data]
         
 #        Fetch full plant details from plants collection
@@ -121,7 +121,7 @@ def dashboard():
                     plant_copy["age"] = age_info["age"]
                     plant_copy["age_id"] = age_info["age_id"]  # Fetch age
                     final_plants.append(plant_copy)
-        print(final_plants)
+        # print(final_plants)
 
 
         # Handle POST Requests
@@ -129,11 +129,11 @@ def dashboard():
             # When the user selects a different garden
             if 'select_garden' in request.form:
                 garden_id = request.form.get('garden_id') or default_garden_id
-                print("select")
+                # print("select")
                 return redirect(url_for('dashboard.dashboard', garden_id=str(garden_obj_id)))
 
             if 'add_plant' in request.form:
-                print("garden id", garden_id)
+                # print("garden id", garden_id)
                 plant_id = request.form.get('plant_id')
                 plant_id = ObjectId(plant_id)
                 age_id = request.form.get('age_id')
@@ -151,12 +151,14 @@ def dashboard():
                         plant_common_name = plant_info.get("commonName", "Unknown")
 
                         # Check if scheduling information exists
-                        if all(key in plant_info for key in ["watering", "fertilizing", "sunlight", "fertilizer_type"]):
+                        if all(key in plant_info for key in ["watering", "fertilizing", "sunlight", "fertilizer_type", "soil_type", "change_soil"]):
                             data = {
                                 "watering": plant_info["watering"],
                                 "fertilizing": plant_info["fertilizing"],
                                 "sunlight": plant_info["sunlight"],
-                                "fertilizer_type": plant_info["fertilizer_type"]
+                                "fertilizer_type": plant_info["fertilizer_type"],
+                                "soil_type": plant_info["soil_type"],
+                                "change_soil": plant_info["change_soil"]
                             }
                         else:
                             # Fetch scheduling details from Gemini API
@@ -165,7 +167,8 @@ def dashboard():
                                     "I just want numbers like in how many days return only a number, "
                                     "also give me the amount of sunlight it needs. In sunlight, give: "
                                     "1 for full sunlight, 2 for partial sunlight, 3 for no sunlight. "
-                                    "Also give me the type of fertilizer recommended. in watering and fertilizing also only give a number in output not a interval")
+                                    "Also give me the type of fertilizer recommended. in watering and fertilizing also only give a number in output not a interval"
+                                    "Also give me type for soil recommended for my plant. in change_soil give number of months in which soil needs to be replaced.")
 
                             response = model.generate_content(prompt)
                             gemini_response = response.text
@@ -178,7 +181,9 @@ def dashboard():
                                         "watering": data["watering"],
                                         "fertilizing": data["fertilizing"],
                                         "sunlight": data["sunlight"],
-                                        "fertilizer_type": data["fertilizer_type"]
+                                        "fertilizer_type": data["fertilizer_type"],
+                                        "soil_type": data["soil_type"],
+                                        "change_soil": data["change_soil"]
                                     }}
                                 )
 
@@ -207,6 +212,8 @@ def dashboard():
                                 "fertilizing": data["fertilizing"],
                                 "sunlight": data["sunlight"],
                                 "fertilizer_type": data["fertilizer_type"],
+                                "soil_type":data["soil_type"],
+                                "change_soil":data["change_soil"],
                                 "plant_common_name": plant_common_name,
                                 "age_id": age_id,
                                 "quantity": 1  # Start with quantity 1
@@ -246,7 +253,7 @@ def dashboard():
 
                     return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
         # Render Template with the selected garden's plant
-        print("garden obj id ",garden_obj_id)
+        # print("garden obj id ",garden_obj_id)
         return render_template(
             'dashboard.html',
             user_plants=final_plants,
@@ -276,8 +283,8 @@ def add_garden():
 # Extract garden names from the list of dictionaries
     existing_garden_names = [garden["gardenName"] for garden in user_garden]
 
-    print(garden_name)
-    print(existing_garden_names)
+    # print(garden_name)
+    # print(existing_garden_names)
 
     if garden_name in existing_garden_names:
         flash("Error: Garden name already exists. Cannot add the same garden name.", "danger")
@@ -301,7 +308,7 @@ def ensure_default_garden(user_id):
     db = current_app.config['DB_CONNECTION']
     
     default_garden = db.garden.find_one({"user_id": ObjectId(user_id)})
-    print(default_garden)
+    # print(default_garden)
     if not default_garden:
         default_garden_id = db.garden.insert_one({
             "gardenName": "My Garden",
@@ -311,7 +318,7 @@ def ensure_default_garden(user_id):
     else:
         default_garden_id = default_garden["_id"]
     
-    print(str(default_garden_id))
+    # print(str(default_garden_id))
     return str(default_garden_id)  # Ensure it's a string for URL usage
 
 def get_user_plants(db, user_id, garden_id):
@@ -358,6 +365,10 @@ def parse_gemini_response(response_text):
                 data['sunlight'] = int(line.split(":")[1].strip())
             elif "Fertilizer type:" in line:
                 data['fertilizer_type'] = line.split(":")[1].strip()
+            elif "Soil type:" in line:
+                data['soil_type'] = line.split(":")[1].strip()
+            elif "Change soil:" in line:
+                data['change_soil'] = int(line.split(":")[1].strip())
     except Exception as e:
         print(f"Error parsing response: {e}")
     return data

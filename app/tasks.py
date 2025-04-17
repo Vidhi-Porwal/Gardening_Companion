@@ -31,7 +31,7 @@
 from celery import shared_task
 from flask_mail import Message
 from flask import current_app
-from . import mail
+from app import mail
 from datetime import datetime, timedelta
 # from app import app, mail, Message
 @shared_task
@@ -100,7 +100,6 @@ def send_plant_added_email(user_email, plant_name):
 # from . import mail, celery  # Import Celery instance
 
 from .celery_app import make_celery
-from . import mail
 # celery = make_celery(app)
 from celery import Celery
 @shared_task
