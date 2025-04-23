@@ -41,10 +41,10 @@
                 <td>{{ request.plantName }}</td>
                 <td>{{ request.description }}</td>
                 <td>
-                    <form action="{{ url_for('dashboard.approve_plant', request_id=request._id) }}" method="post" style="display:inline;">
+                    <form action="{{ url_for('admin.approve_plant', request_id=request._id) }}" method="post" style="display:inline;">
                         <button type="submit">Approve</button>
                     </form>
-                    <form action="{{ url_for('dashboard.reject_plant', request_id=request._id) }}" method="post" style="display:inline;">
+                    <form action="{{ url_for('admin.reject_plant', request_id=request._id) }}" method="post" style="display:inline;">
                         <button type="submit" style="background-color: red; color: white;">Reject</button>
                     </form>
                 </td>
