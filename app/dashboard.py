@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from functools import wraps
-from .models import User, Plant, Garden, GardenPlant, Age, ChatSession, GeminiHelper
+from .models import User, Plant, Garden, GardenPlant, Age, ChatSession, GeminiHelper, Chatbot
 from bson.objectid import ObjectId
+import google.generativeai as genai
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -40,9 +41,12 @@ def dashboard():
             garden_obj_id = ObjectId(default_garden_id)
 
         final_plants = GardenPlant.get_user_plants(current_user.id, garden_obj_id)
+        print(final_plants)
         plants = Plant.get_all_plants()
         age = Age.get_all_ages()
         gemini_response = None
+
+        print(plants)
 
         if request.method == 'POST':
             if 'select_garden' in request.form:
@@ -138,18 +142,48 @@ def dashboard():
         print(f"Error in dashboard: {e}")
         return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
 
+# @dashboard_bp.route("/add_garden", methods=["POST"])
+# @login_required
+# def add_garden():
+
+#     garden_name = request.form.get("garden_name")
+#     if garden_name:
+#         new_garden_id = Garden.add_garden(current_user.id, garden_name)
+#         if new_garden_id:
+#             flash("Garden added successfully!")
+#             return redirect(url_for("dashboard.dashboard", garden_id=new_garden_id))
+#         else:
+#             flash("Error: Garden name already exists.", "danger")
+#     return redirect(url_for("dashboard.dashboard"))
+
 @dashboard_bp.route("/add_garden", methods=["POST"])
 @login_required
 def add_garden():
     garden_name = request.form.get("garden_name")
+
+    # Get the number of gardens the user already has
+    user_gardens = Garden.get_user_gardens(current_user.id)
+    max_gardens_allowed = 2  # You can make this configurable
+
+    if len(user_gardens) >= max_gardens_allowed:
+        # Redirect to a page explaining the limit or offering upgrade/options
+        flash("You’ve reached the limit of 2 gardens. Upgrade your plan or manage your existing gardens.", "warning")
+        return redirect(url_for("dashboard.garden_limit_info"))
+
     if garden_name:
         new_garden_id = Garden.add_garden(current_user.id, garden_name)
         if new_garden_id:
-            flash("Garden added successfully!")
+            flash("Garden added successfully!", "success")
             return redirect(url_for("dashboard.dashboard", garden_id=new_garden_id))
         else:
             flash("Error: Garden name already exists.", "danger")
+    
     return redirect(url_for("dashboard.dashboard"))
+
+@dashboard_bp.route("/garden_limit_info", methods=["GET"])
+@login_required
+def garden_limit_info():
+    return render_template("garden_limit_info.html")
 
 @dashboard_bp.route('/delete_garden/<garden_id>', methods=['DELETE'])
 @login_required
@@ -167,18 +201,30 @@ def chatbot_toggle():
 @dashboard_bp.route('/chatbot', methods=['POST'])
 @login_required
 def chatbot():
+    chat_session = ChatSession(current_user.id)
     user_message = request.form.get("message", "").strip()
+    
     if not user_message:
         return redirect(url_for('dashboard.dashboard'))
 
-    chat_session = ChatSession(current_user.id)
+    garden_id = request.args.get("garden_id") or request.form.get("garden_id")
+    
+    if not garden_id:
+        # Get default garden if none specified
+        garden_id = Garden.ensure_default_garden(current_user.id)
+
     chat_session.add_message("User", user_message)
     
-    # Get response (simplified - you'd implement your chatbot logic here)
-    response = f"Response to: {user_message}"
+    # Use the Chatbot model to generate response
+    response = Chatbot.generate_response(
+        prompt=user_message,
+        chat_history=chat_session.chat_history,
+        user_id=current_user.id,
+        garden_id=garden_id
+    )
+    
     chat_session.add_message("Plantie 🌼", response)
     
-    garden_id = request.args.get("garden_id") or request.form.get("garden_id")
     return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
 
 @dashboard_bp.route('/request_plant', methods=['GET', 'POST'])
