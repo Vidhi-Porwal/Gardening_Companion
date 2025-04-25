@@ -41,12 +41,11 @@ def dashboard():
             garden_obj_id = ObjectId(default_garden_id)
 
         final_plants = GardenPlant.get_user_plants(current_user.id, garden_obj_id)
-        print(final_plants)
+        
         plants = Plant.get_all_plants()
         age = Age.get_all_ages()
         gemini_response = None
 
-        print(plants)
 
         if request.method == 'POST':
             if 'select_garden' in request.form:
@@ -141,20 +140,6 @@ def dashboard():
     except Exception as e:
         print(f"Error in dashboard: {e}")
         return render_template('error.html', error_message="Something went wrong. Please try again later."), 500
-
-# @dashboard_bp.route("/add_garden", methods=["POST"])
-# @login_required
-# def add_garden():
-
-#     garden_name = request.form.get("garden_name")
-#     if garden_name:
-#         new_garden_id = Garden.add_garden(current_user.id, garden_name)
-#         if new_garden_id:
-#             flash("Garden added successfully!")
-#             return redirect(url_for("dashboard.dashboard", garden_id=new_garden_id))
-#         else:
-#             flash("Error: Garden name already exists.", "danger")
-#     return redirect(url_for("dashboard.dashboard"))
 
 @dashboard_bp.route("/add_garden", methods=["POST"])
 @login_required
