@@ -25,6 +25,7 @@ def role_required(*roles):
 @login_required
 @role_required('user', 'admin')
 def dashboard():
+    # import pdb; pdb.set_trace()
     try:
         default_garden_id = Garden.ensure_default_garden(current_user.id)
         garden_id = request.form.get('garden_id') or request.args.get('garden_id') or default_garden_id
@@ -40,7 +41,7 @@ def dashboard():
         except:
             garden_obj_id = ObjectId(default_garden_id)
 
-        final_plants = GardenPlant.get_user_plants(current_user.id, garden_obj_id)
+        final_plants = GardenPlant.get_user_plants(current_user.id, garden_obj_id)  
         
         plants = Plant.get_all_plants()
         age = Age.get_all_ages()
@@ -106,8 +107,11 @@ def dashboard():
                 return redirect(url_for('dashboard.dashboard', garden_id=str(garden_obj_id)))
             
             if 'remove_plant' in request.form:
+                # import pdb; pdb.set_trace()
                 plant_id = request.form.get('plant_id')
+                print (plant_id)
                 age_id = request.form.get('age_id')
+                print (age_id,"000000000")
                 
                 result = GardenPlant.remove_plant_from_garden(
                     current_user.id,

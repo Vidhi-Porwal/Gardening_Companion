@@ -230,7 +230,7 @@ class GardenPlant:
             {"user_id": user_id, "garden_id": ObjectId(garden_id)},
             {"plant_id": 1, "_id": 0, "age_id": 1, "quantity": 1}
         ))
-        
+
         if not user_plants_data:
             return []
             
@@ -251,6 +251,7 @@ class GardenPlant:
                     plant_copy = plant.copy()
                     plant_copy["quantity"] = entry["quantity"]
                     plant_copy["age"] = age_data.get(str(entry["age_id"]), "Unknown")
+                    plant_copy["age_id"] = entry["age_id"]
                     final_plants.append(plant_copy)
                     
         return final_plants
@@ -499,7 +500,7 @@ class Chatbot:
     def generate_response(prompt, chat_history, user_id=None, garden_id=None):
         """Generate response using Gemini API."""
         try:
-            # Check if user is asking about their gardens
+            #Check if user is asking about their gardens
             if "my garden" in prompt.lower() or "list my gardens" in prompt.lower():
                 return Chatbot.get_user_gardens(user_id)
                 
