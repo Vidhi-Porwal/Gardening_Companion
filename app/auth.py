@@ -133,9 +133,9 @@ def callback():
         print("Before login_user:", user_obj.__dict__)
         login_user(user_obj)
         print("After login_user:", current_user)
-        # if not phone_no:
-        #     flash("Please update your phone number.", "info")
-        #     return redirect(url_for("auth.update_phone"))
+        if not phone_no:
+            flash("Please update your phone number.", "info")
+            return redirect(url_for("auth.update_phone"))
 
         flash("Login successful!", "success")
         return redirect(url_for("dashboard.dashboard"))
