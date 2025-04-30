@@ -35,6 +35,22 @@ def load_user(user_id):
         )
     return None
 
+#------------------------------------------celery-task-queue-connection-with-raddis-----------------------------
+
+# Configuration
+# app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+# app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+# celery = make_celery(app)
+
+from celery import Celery
+def make_celery(app_name=__name__):
+    redis_uri = "redis://localhost:6379"
+    return Celery(app_name, backend=redis_uri, broker= redis_uri)
+celery  = make_celery()
+
+
+
+
 def create_app():
     """
     Application Factory: Creates and configures the Flask app.
