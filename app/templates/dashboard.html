@@ -302,7 +302,11 @@
                                         {% endfor %} -->
                                         {% set content = message.content %}
                                         {% for line in content.split('\n') %}
-                                            {% if line.startswith('* ') %}
+                                            {% if line.startswith('🌱 ') %}
+                                                {% set bullet_text = line[2:] %}
+                                                {% set formatted_text = bullet_text %}
+                                                <p class="mb-2"><span class="bullet">🌱</span> {{ formatted_text | safe }}</p>
+                                            {% elif line.startswith('* ') %}
                                                 {% set bullet_text = line[2:] %}
                                                 {% set formatted_text = bullet_text | replace("**", "<strong>", 1) | replace("**", "</strong>", 1) %}
                                                 <p class="mb-2"><span class="bullet">🌱</span> {{ formatted_text | safe }}</p>

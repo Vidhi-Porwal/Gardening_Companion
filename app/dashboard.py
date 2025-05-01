@@ -211,7 +211,7 @@ def chatbot():
         user_id=current_user.id,
         garden_id=garden_id
     )
-    
+    print (response)
     chat_session.add_message("Plantie 🌼", response)
     
     return redirect(url_for('dashboard.dashboard', garden_id=garden_id))
