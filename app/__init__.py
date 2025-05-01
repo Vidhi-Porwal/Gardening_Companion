@@ -12,7 +12,6 @@ from .models import User
 
 # Load environment variables
 load_dotenv()
-
 # Initialize Flask extensions
 mail = Mail()
 oauth = OAuth()
@@ -34,6 +33,22 @@ def load_user(user_id):
             role=user.get('role', 'user')
         )
     return None
+
+#------------------------------------------celery-task-queue-connection-with-raddis-----------------------------
+
+# Configuration
+# app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+# app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+# celery = make_celery(app)
+
+# from celery import Celery
+# def make_celery(app_name=__name__):
+#     redis_uri = "redis://localhost:6379"
+#     return Celery(app_name, backend=redis_uri, broker= redis_uri)
+# celery  = make_celery()
+
+
+
 
 def create_app():
     """
@@ -111,10 +126,13 @@ def create_app():
     from .dashboard import dashboard_bp
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
 
-    from .profile import profile_bp
-    app.register_blueprint(profile_bp, url_prefix='/profile')
+    # from .profile import profile_bp
+    # app.register_blueprint(profile_bp, url_prefix='/profile')
 
     from .admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    
+    from .views import done
+    app.register_blueprint(done, url_prefix='/done')
     
     return app

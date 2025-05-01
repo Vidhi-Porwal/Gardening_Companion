@@ -8,7 +8,7 @@ from .models import User
 from . import mail
 import requests
 from .utils import generate_reset_token, verify_reset_token
-import config
+import app.config
 auth = Blueprint('auth', __name__)
 
 # Regex patterns
@@ -24,7 +24,7 @@ def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
 
 
-# ---------- GOOGLE OAUTH ROUTES ----------\
+# ---------- GOOGLE OAUTH ROUTES ----------
 @auth.route('/login/now')
 def google_login():
     google_provider_cfg = get_google_provider_cfg()
