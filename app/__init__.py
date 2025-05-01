@@ -12,7 +12,6 @@ from .models import User
 
 # Load environment variables
 load_dotenv()
-
 # Initialize Flask extensions
 mail = Mail()
 oauth = OAuth()
@@ -127,8 +126,8 @@ def create_app():
     from .dashboard import dashboard_bp
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
 
-    from .profile import profile_bp
-    app.register_blueprint(profile_bp, url_prefix='/profile')
+    # from .profile import profile_bp
+    # app.register_blueprint(profile_bp, url_prefix='/profile')
 
     from .admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
