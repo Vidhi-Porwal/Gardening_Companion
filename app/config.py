@@ -1,14 +1,14 @@
 
 # config.py
 class Config:
-    CELERY_BROKER_URL = 'redis://localhost:6379/0'
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_BROKER_URL = 'redis://localhost:6380/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6380/0'
 
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
-    MAIL_USERNAME = 'ajeymalviya@gmail.com'
-    MAIL_PASSWORD = 'kabirdas@2003'  # Use an app password if using Gmail
+    MAIL_USERNAME = 'ajeymalviya143@gmail.com'
+    MAIL_PASSWORD = 'mcia proh orkd uvpd'  # Use an app password if using Gmail
 
 
 GOOGLE_CLIENT_ID = '745426787344-1o3tnk39j9s84vtif2gbn8v277e0ks6r.apps.googleusercontent.com'
