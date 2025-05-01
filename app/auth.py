@@ -8,7 +8,7 @@ from .models import User
 from . import mail
 import requests
 from .utils import generate_reset_token, verify_reset_token
-import config
+import app.config
 auth = Blueprint('auth', __name__)
 
 # Regex patterns
