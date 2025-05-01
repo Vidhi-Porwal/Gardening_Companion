@@ -133,4 +133,7 @@ def create_app():
     from .admin import admin_bp
     app.register_blueprint(admin_bp, url_prefix='/admin')
     
+    from .views import done
+    app.register_blueprint(done, url_prefix='/done')
+    
     return app
