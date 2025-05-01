@@ -1,15 +1,41 @@
 from celery import shared_task
-from flask_mail import Message
-from flask import current_app
+from flask_mail import Message,Mail
+from flask import current_app,Flask
 from app import mail
+from app.config import Config
+from app.celery_app import celery
 from datetime import datetime, timedelta
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+from pymongo import MongoClient
 
+app = Flask(__name__)
+app.config.from_object(Config)
+
+mail = Mail(app)
 def get_mongo_collection():
     client = MongoClient(current_app.config['MONGO_URI'])
     db = client.get_default_database()
     return db['user_plants'], db['users']
+
+
+
+def create_flask_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    mail = Mail(app)
+    return app, mail
+
+@celery.task(name='send_email_task')  # Explicit name avoids import issues
+def send_email_task(subject, recipients, body):
+    app, mail = create_flask_app()
+    print('app and mail is ', app ,'   ',mail) 
+    with app.app_context():
+        msg = Message(subject=subject,
+                      sender=app.config['MAIL_USERNAME'],
+                      recipients=recipients,
+                      body=body)
+        mail.send(msg)
 
 @shared_task
 def send_plant_added_email(user_email, plant_name):
@@ -53,7 +79,7 @@ def send_fertilizer_notifications():
     for plant in due_plants:
         user = users_col.find_one({"_id": ObjectId(plant['user_id'])})
         if user:
-            send_email(user['email'], f"Fertilizer Reminder for {plant['name']}",
+            send_email_task(user['email'], f"Fertilizer Reminder for {plant['name']}",
                        f"Hi, it's time to fertilize your plant '{plant['name']}'. Please do so today!")
 
 @shared_task
@@ -74,7 +100,7 @@ def send_watering_notifications():
     for plant in due_plants:
         user = users_col.find_one({"_id": ObjectId(plant['user_id'])})
         if user:
-            send_email(user['email'], f"Watering Reminder for {plant['name']}",
+            send_email_task(user['email'], f"Watering Reminder for {plant['name']}",
                        f"Hi, it's time to water your plant '{plant['name']}'. Don't forget!")
 
 @shared_task
@@ -95,13 +121,14 @@ def send_repotting_notifications():
     for plant in due_plants:
         user = users_col.find_one({"_id": ObjectId(plant['user_id'])})
         if user:
-            send_email(user['email'], f"Repotting Reminder for {plant['name']}",
+            send_email_task(user['email'], f"Repotting Reminder for {plant['name']}",
                        f"Hi, it's time to repot your plant '{plant['name']}'. Make sure it has space to grow!")
 
 
 
-def send_email(recipient, subject, body):
-    """Helper function to send email."""
-    with current_app.app_context():
-        msg = Message(subject=subject, recipients=[recipient], body=body)
-        mail.send(msg)
+# def send_email(recipient, subject, body):
+#     """Helper function to send email."""
+#     with current_app.app_context():
+#         msg = Message(subject=subject, recipients=[recipient], body=body)
+#         mail.send(msg)
+
