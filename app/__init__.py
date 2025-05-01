@@ -42,11 +42,11 @@ def load_user(user_id):
 # app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 # celery = make_celery(app)
 
-from celery import Celery
-def make_celery(app_name=__name__):
-    redis_uri = "redis://localhost:6379"
-    return Celery(app_name, backend=redis_uri, broker= redis_uri)
-celery  = make_celery()
+# from celery import Celery
+# def make_celery(app_name=__name__):
+#     redis_uri = "redis://localhost:6379"
+#     return Celery(app_name, backend=redis_uri, broker= redis_uri)
+# celery  = make_celery()
 
 
 
