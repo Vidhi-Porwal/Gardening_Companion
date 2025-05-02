@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from functools import wraps
 from .models import User, Plant, Garden, GardenPlant, Age, ChatSession, GeminiHelper, Chatbot
 from bson.objectid import ObjectId
 import google.generativeai as genai
+from app.tasks import send_email_task
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -102,7 +103,39 @@ def dashboard():
                     if result == "incremented":
                         flash(f"Another {plant_common_name} has been added to your garden!", "success")
                     else:
-                        flash(f"{plant_common_name} has been added to your garden!", "success")
+                        # flash(f"{plant_common_name} has been added to your garden!", "success")
+                        print('in else condition')
+                        db = current_app.config['DB_CONNECTION']
+                        user = db.users.find_one({"_id": ObjectId(current_user.id)})
+                        print('current user is ', user )
+                        if user:
+                            subject = f"New Plant Added to Your Garden: {plant_common_name}"
+                            body = f"""
+                                Hello {user.get('full_name', 'Gardener')},
+
+                                A new plant has been added to your garden:
+
+                                🌱 Common Name: {plant_common_name}
+                                💧 Watering every {data['watering']} days
+                                🌞 Sunlight requirement: {data['sunlight']}
+                                🌾 Fertilizer: {data['fertilizer_type']}
+                                🪴 Soil Type: {data['soil_type']}
+                                ♻️ Change soil every {data['change_soil']} months
+
+                                Happy Gardening! 🌼
+
+                                - Garden Team
+                            """
+
+                            # Assuming Celery or similar async task is used
+                            send_email_task.delay(
+                                subject=subject,
+                                recipients=[user['email']],
+                                body=body
+                            )
+
+                            flash(f"{plant_common_name} has been added to your garden!", "success")
+
 
                 return redirect(url_for('dashboard.dashboard', garden_id=str(garden_obj_id)))
             
