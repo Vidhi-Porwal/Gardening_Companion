@@ -43,7 +43,7 @@ def insert_data_into_mongodb(data):
                 "saplingDescription": row.get('Sapling Description', ''),
                 "genus": row.get('Genus', ''),
                 "imageURL": imageURL,
-                  "rank":row.get('Rank',''),  # ✅ Store Image URL as string
+                "rank":row.get('Rank',''),  # ✅ Store Image URL as string
             }
             collection.insert_one(document)
         print("✅ Data inserted successfully!")
