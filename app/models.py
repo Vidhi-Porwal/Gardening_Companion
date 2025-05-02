@@ -448,7 +448,7 @@ class Chatbot:
         for garden in gardens:
             garden_id = str(garden['_id'])
             garden_name = garden['gardenName']
-            response += f"🌱 <a href='/dashboard?garden_id={garden_id}'>{garden_name}</a>\n"
+            response += f"🌱 <a href='/dashboard/?garden_id={garden_id}'>{garden_name}</a>\n"
         
         return response
 
@@ -529,7 +529,7 @@ class Chatbot:
             
             if response and hasattr(response, "text"):
                 return response.text.strip()
-                
+
             return "I couldn't generate a response. Please try rephrasing your question."
             
         except Exception as e:
