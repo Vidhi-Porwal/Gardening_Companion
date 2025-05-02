@@ -11,8 +11,9 @@ import os
 logging.basicConfig(level=logging.ERROR)
 
 # Configure the Gemini API
-api_key = os.getenv("GENAI_API_KEY")
+api_key = 'AIzaSyAgiXHaX1IuWDErnEwfXdYRWMGhKUCehs0'  # Use environment variable for API key
 genai.configure(api_key=api_key)
+
 
 # MongoDB Helper
 def get_db():
