@@ -38,8 +38,8 @@ def insert_data_into_mongodb(data):
             document = {
                 "commonName": row.get('Common Name', ''),
                 "scientificName": row.get('Scientific Name', ''),
-                "familyCommonName": row.get('Family Common Name', ''),
-                "edible": row.get('Edible', ''),
+                "familyCommonName": row.get('Family', ''),
+                "edible": True if row.get('Edible', '').lower() == 'yes' else False,
                 "saplingDescription": row.get('Sapling Description', ''),
                 "genus": row.get('Genus', ''),
                 "imageURL": imageURL,
@@ -52,7 +52,7 @@ def insert_data_into_mongodb(data):
 
 # Main function
 def main():
-    file_path = "/home/gurpreet/Downloads/final.xlsx"  # Replace with your Excel file path
+    file_path = "/home/vidhi/indian_plants_100.xlsx"  # Replace with your Excel file path
     data = read_excel_file(file_path)
     if data is not None:
         insert_data_into_mongodb(data)
