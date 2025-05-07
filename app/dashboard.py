@@ -92,6 +92,7 @@ def dashboard():
                                 "change_soil": data["change_soil"]
                             })
 
+
                     result = GardenPlant.add_plant_to_garden(
                         current_user.id, 
                         garden_obj_id, 
@@ -133,12 +134,51 @@ def dashboard():
                                 recipients=[user['email']],
                                 body=body
                             )
+                             # 🌿 Schedule Reminders
+                            print('new logic')     
+                            try:
+                                print('new logic')     
+                                from datetime import datetime, timedelta
+                                watering_days = int(data['watering'])
+                                fertilizing_days = int(data['fertilizing'])
+                                soil_change_days = int(data['change_soil']) * 30  # convert months to days
+                                print('watering days are ', watering_days, 'fertiizing days are ', fertilizing_days, ' and soil change is ', soil_change_days)
+                            except Exception as e:
+                                print('❌ Error in scheduling reminders:', e)
+                            print('watering days are ', watering_days, 'fertiizing days are ', fertilizing_days, ' and soil change is ', soil_change_days)
+                            full_name = user.get('full_name', 'Gardener')
+                            email = user['email']
+                            plant = plant_common_name
 
-                            flash(f"{plant_common_name} has been added to your garden!", "success")
+                            # Watering
+                            send_email_task.apply_async(
+                                args=[f"🌿 Reminder: Water {plant}", [email],
+                                    f"Hi {full_name},\n\nThis is your reminder to 💧 water your {plant} today!"],
+                                eta=datetime.utcnow() + timedelta(days=watering_days)
+                            )
 
+                            # Fertilizing
+                            send_email_task.apply_async(
+                                args=[f"🌿 Reminder: Fertilize {plant}", [email],
+                                    f"Hi {full_name},\n\nThis is your reminder to 🌾 fertilize your {plant} today!"],
+                                eta=datetime.utcnow() + timedelta(days=fertilizing_days)
+                            )
+
+                            # Soil Change
+                            send_email_task.apply_async(
+                                args=[f"🌿 Reminder: Change Soil for {plant}", [email],
+                                    f"Hi {full_name},\n\n🪴 It's time to change the soil for your {plant}!"],
+                                eta=datetime.utcnow() + timedelta(days=soil_change_days)
+                            )
+
+                            if result == "incremented":
+                                flash(f"Another {plant_common_name} has been added to your garden!", "success")
+                            else:
+                                flash(f"{plant_common_name} has been added to your garden!", "success")
 
                 return redirect(url_for('dashboard.dashboard', garden_id=str(garden_obj_id)))
-            
+
+
             if 'remove_plant' in request.form:
                 # import pdb; pdb.set_trace()
                 plant_id = request.form.get('plant_id')
