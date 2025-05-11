@@ -10,6 +10,7 @@ import requests
 from .utils import generate_reset_token, verify_reset_token
 import app.config
 auth = Blueprint('auth', __name__)
+#added blueprint with auth name
 
 # Regex patterns
 EMAIL_REGEX = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
