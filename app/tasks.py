@@ -1,7 +1,7 @@
 from celery import shared_task
 from flask_mail import Message,Mail
 from flask import current_app,Flask
-from app import mail
+    
 from app.config import Config
 from app.celery_app import celery
 from datetime import datetime, timedelta
