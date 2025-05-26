@@ -7,11 +7,17 @@ from bson.objectid import ObjectId
 from .models import User
 from datetime import datetime
 from flask import render_template, request, jsonify
-
+import json
+from kafka import KafkaProducer
 
 # Initialize blueprint
 dashboard_bp = Blueprint('dashboard', __name__)
 
+# Initialize Kafka producer (you may move this to app factory or global config)
+producer = KafkaProducer(
+    bootstrap_servers='localhost:9092',
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+)
 # Configure the Gemini API
 
 api_key = 'AIzaSyAgiXHaX1IuWDErnEwfXdYRWMGhKUCehs0'  # Use environment variable for API key
@@ -655,6 +661,7 @@ def add_plant():
         user_id = data.get('user_id')  # Make sure this comes from the frontend
         user = db.users.find_one({"_id": ObjectId(user_id)})
 
+       # Inside your route
         if user:
             subject = f"New Plant Added to Your Garden: {new_plant['commonName']}"
             body = f"""
@@ -672,14 +679,19 @@ def add_plant():
 
                     - Garden Team
                     """
-            send_email_task.delay(
-                subject=subject,
-                recipients=[user['email']],
-                body=body
-            )
 
-        return jsonify({"message": "Plant added and user notified successfully!"})     
+            email_payload = {
+                "subject": subject,
+                "recipients": [user['email']],
+                "body": body
+            }
 
+            producer.send('email-topic', email_payload)
+            print('it was done sending', producer.send('email-topic', email_payload))
+            producer.flush()
+            print(producer.flush())  # ensure it's sent
+
+            return jsonify({"message": "Plant added. Email event queued to Kafka."})
 
 @dashboard_bp.route('/edit_plant/<plant_id>', methods=['PUT'])
 @login_required
