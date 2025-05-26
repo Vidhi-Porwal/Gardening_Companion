@@ -55,13 +55,11 @@ def create_app():
     Application Factory: Creates and configures the Flask app.
     """
     app = Flask(__name__)
-
-
     # MONGO_URI='mongodb://admin:Gurpreet@23@3.86.209.148:27017/Gardening_Companion?authSource=admin'
     MONGO_DB_NAME='Gardening_Companion'
-    MONGO_USER='admin'
-    MONGO_PASSWORD='Gurpreet@23' # Special characters like '@' need encoding
-    MONGO_HOST='3.86.209.148'
+    MONGO_USER='gurpreet'
+    MONGO_PASSWORD='Gardening@2025' # Special characters like '@' need encoding
+    MONGO_HOST='54.167.59.142'
     MONGO_PORT='27017'
     MONGO_DB_NAME='Gardening_Companion'
     MONGO_AUTH_SOURCE='admin'
@@ -93,7 +91,9 @@ def create_app():
     # MongoDB Connection
     try:
         mongo_client = pymongo.MongoClient(app.config['MONGO_URI'])
+        print('hey its mongo client', mongo_client)
         db = mongo_client[app.config['MONGO_DB_NAME']]
+        print('its db ', db)
         app.config['DB_CONNECTION'] = db
     except pymongo.errors.PyMongoError as e:
         print(f"Error connecting to MongoDB: {e}")
