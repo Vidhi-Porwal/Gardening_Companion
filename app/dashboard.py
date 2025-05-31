@@ -5,6 +5,7 @@ from .models import User, Plant, Garden, GardenPlant, Age, ChatSession, GeminiHe
 from bson.objectid import ObjectId
 import google.generativeai as genai
 from app.tasks import send_email_task
+import requests
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -110,32 +111,7 @@ def dashboard():
                         user = db.users.find_one({"_id": ObjectId(current_user.id)})
                         print('current user is ', user )
                         if user:
-                            subject = f"New Plant Added to Your Garden: {plant_common_name}"
-                            body = f"""
-                                Hello {user.get('full_name', 'Gardener')},
-
-                                A new plant has been added to your garden:
-
-                                🌱 Common Name: {plant_common_name}
-                                💧 Watering every {data['watering']} days
-                                🌞 Sunlight requirement: {data['sunlight']}
-                                🌾 Fertilizer: {data['fertilizer_type']}
-                                🪴 Soil Type: {data['soil_type']}
-                                ♻️ Change soil every {data['change_soil']} months
-
-                                Happy Gardening! 🌼
-
-                                - Garden Team
-                            """
-
-                            # Assuming Celery or similar async task is used
-                            send_email_task.delay(
-                                subject=subject,
-                                recipients=[user['email']],
-                                body=body
-                            )
-                             # 🌿 Schedule Reminders
-                            print('new logic')     
+                            trigger_airflow_email_task(user, data, plant_common_name)
                             try:
                                 print('new logic')     
                                 from datetime import datetime, timedelta
