@@ -1,7 +1,8 @@
 from email.message import EmailMessage
 import smtplib
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+#from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
 import pendulum
 
 from config import Config  
@@ -28,13 +29,13 @@ def send_email(**context):
 with DAG(
     dag_id="send_email_task",
     start_date=pendulum.datetime(2023, 1, 1),
-    schedule_interval=None,
+    schedule=None,
     catchup=False,
     tags=["email"],
 ) as dag:
     task = PythonOperator(
         task_id="send_email",
         python_callable=send_email,
-        provide_context=True,
+        #provide_context=True,
     )
 
