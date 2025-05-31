@@ -1,4 +1,3 @@
-
 x-airflow-common: &airflow-common
   image: apache/airflow:3.0.1-python3.11
   env_file:
@@ -11,7 +10,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
   volumes:
-    - ./:/opt/airflow
+    -  /Users/yashvaishnav/Gardening_Companion/app/airflow:/opt/airflow            
+    - ./config.py:/opt/airflow/config.py  # Explicitly mount config.py
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     - postgres
